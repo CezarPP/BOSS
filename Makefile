@@ -24,3 +24,4 @@ build-x86_64: $(kernel_object_files) $(x86_64_asm_object_files)
 
 clean:
 	rm -rf dist
+	rm -rf build

@@ -1,2 +1,4 @@
 misc.xml
 vcs.xml
+*.o
+build/
