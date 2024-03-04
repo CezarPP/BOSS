@@ -85,4 +85,27 @@ public:
     void print_set_color(PRINTER_COLORS foreground, PRINTER_COLORS background) {
         color = static_cast<uint8_t>(foreground) + (static_cast<uint8_t>(background) << 4);
     }
+
+    void print_hex(uint64_t num) {
+        print_str("0x");
+
+        bool leading = true;
+        for (int i = 60; i >= 0; i -= 4) {
+            auto temp = static_cast<char>((num >> i) & 0xF);
+            if (leading && temp == 0 && i != 0) {
+                continue;
+            }
+            leading = false;
+            if (temp >= 0xA) {
+                print_char(temp - 0xA + 'A');
+            } else {
+                print_char(temp + '0');
+            }
+        }
+
+        if (leading) {
+            print_char('0');
+        }
+    }
+
 };

@@ -5,6 +5,8 @@ section .text
 bits 32
 start:
 	mov esp, stack_top
+	push eax
+	push ebx
 
 	call check_multiboot
 	call check_cpuid
