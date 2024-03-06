@@ -1,4 +1,4 @@
-#include "print.h"
+#include "util/print.h"
 
 extern "C" void kernel_main(void* multiboot) {
     Printer globalPrinter;

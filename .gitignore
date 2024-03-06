@@ -1,4 +1,8 @@
 misc.xml
 vcs.xml
+modules.xml
+workspace.xml
+*.iml
 *.o
 build/
+cmake-build-debug/
