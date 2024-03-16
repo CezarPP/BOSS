@@ -39,6 +39,13 @@ add_custom_target(RunQEMU
         COMMENT Run OS image in QEMU
 )
 
+add_custom_target(RunQEMUMonitor
+        COMMAND qemu-system-${ARCH} -cdrom ${ISO_FILE} -monitor telnet::4444,server,nowait
+        # telnet localhost 4444
+        # sendkey ctrl-alt-delete
+        COMMENT Run OS image in QEMU with monitor
+)
+
 add_custom_target(Run-STDIO-QEMU
         COMMAND xterm -e qemu-system-${ARCH} -cdrom ${ISO_FILE} -monitor stdio
         COMMENT Run OS image in QEMU, get input from stdio
