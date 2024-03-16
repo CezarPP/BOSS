@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "../std/runtime.h"
 
 enum class PRINTER_COLORS : uint8_t {
     PRINT_COLOR_BLACK = 0,
@@ -36,7 +37,21 @@ class Printer {
     size_t row_ = 0;
     uint8_t color = static_cast<uint8_t>(PRINTER_COLORS::PRINT_COLOR_WHITE) |
                     (static_cast<uint8_t>(PRINTER_COLORS::PRINT_COLOR_BLACK) << 4);
+
+    // Private constructor
+    constexpr Printer() = default;
+
 public:
+    Printer(const Printer &) = delete;
+
+    Printer &operator=(const Printer &) = delete;
+
+    // Public method to access the singleton instance
+    static Printer &instance() {
+        static Printer instance;
+        return instance;
+    }
+
     void clear_row(size_t row);
 
     void print_clear();
