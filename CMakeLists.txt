@@ -65,6 +65,7 @@ add_custom_target(DebugQEMU
 add_custom_target(iso DEPENDS ${ISO_FILE})
 
 add_dependencies(RunQEMU iso)
+add_dependencies(RunQEMUMonitor iso)
 add_dependencies(Run-STDIO-QEMU iso)
 add_dependencies(DebugQEMU iso)
 add_dependencies(DebugQEMU2 iso)
