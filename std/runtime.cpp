@@ -4,7 +4,6 @@
  *  Created on: 3/16/24.
  *      Author: Cezar PP
  */
-#pragma once
 
 #include "../include/std/runtime.h"
 /*
