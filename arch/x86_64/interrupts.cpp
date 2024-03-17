@@ -2,6 +2,7 @@
 #include "arch/x86_64/io_ports.h"
 #include "std/memory.h"
 #include "arch/x86_64/exceptions.h"
+#include "util/print.h"
 
 constexpr auto NUM_IDT_ENTRIES = 256;
 
@@ -121,25 +122,31 @@ static void remapIRQTable() {
      * In protected mode, IRQs 0 to 7 conflict with the CPU exceptions, which are reserved by Intel up until 0x1F.
      * Move the interrupt vectors to the beginning of the available range INT 0..0xF -> INT 0x20,...0x2F
      */
+    typedef Port<Byte, MASTER_PIC_COMMAND> masterCommandPort;
+    typedef Port<Byte, SLAVE_PIC_COMMAND> slaveCommandPort;
+    typedef Port<Byte, MASTER_PIC_DATA> masterData;
+    typedef Port<Byte, SLAVE_PIC_DATA> slaveData;
+
+
     // Starts the initialization sequence
-    setPortByte(MASTER_PIC_COMMAND, ICW1_INIT | ICW1_ICW4);
-    setPortByte(SLAVE_PIC_COMMAND, ICW1_INIT | ICW1_ICW4);
+    masterCommandPort::write(ICW1_INIT | ICW1_ICW4);
+    slaveCommandPort::write(ICW1_INIT | ICW1_ICW4);
 
     // Vector offsets
-    setPortByte(MASTER_PIC_DATA, 0x20);
-    setPortByte(SLAVE_PIC_DATA, 0x28);
+    masterData::write(0x20);
+    slaveData::write(0x28);
 
     // Tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-    setPortByte(MASTER_PIC_DATA, 0x04);
+    masterData::write(0x04);
     // Tell Slave PIC its cascade identity
-    setPortByte(SLAVE_PIC_DATA, 0x02);
+    slaveData::write(0x02);
 
     // Have the PICs use 8086 mode (and not 8080 mode)
-    setPortByte(MASTER_PIC_DATA, ICW4_8086);
-    setPortByte(SLAVE_PIC_DATA, ICW4_8086);
+    masterData::write(ICW4_8086);
+    slaveData::write(ICW4_8086);
 
-    setPortByte(MASTER_PIC_DATA, 0x0);
-    setPortByte(SLAVE_PIC_DATA, 0x0);
+    masterData::write(0x0);
+    slaveData::write(0x0);
 }
 
 void idtSetGate(Byte num, Address base, uint16_t sel, Byte flags) {
@@ -218,19 +225,19 @@ void setupInterrupts() {
         idtSetGate(i, (Address) defaultIRQ, SYSTEM_CS, IDT_FLAG);
     }
     idtLoad();
-    asmInterrupt();
+    Printer::instance().print_str("[KERNEL] Finished setting up interrupts\n");
 }
 
 const char *exceptionMessages[] = {"Division By Zero", "Debug",
-                                    "Non Maskable Interrupt", "Breakpoint", "Into Detected Overflow",
-                                    "Out of Bounds", "Invalid Opcode", "No Coprocessor", "Double Fault!",
-                                    "Coprocessor Segment Overrun", "Bad TSS", "Segment Not Present",
-                                    "Stack Fault", "General Protection Fault!", "Page Fault",
-                                    "Unknown Interrupt", "Coprocessor Fault", "Alignment Check Exception",
-                                    "Machine Check Exception", "SIMD fp Exception",
-                                    "Virtualization Exception", "Reserved", "Reserved", "Reserved",
-                                    "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved",
-                                    "Reserved"};
+                                   "Non Maskable Interrupt", "Breakpoint", "Into Detected Overflow",
+                                   "Out of Bounds", "Invalid Opcode", "No Coprocessor", "Double Fault!",
+                                   "Coprocessor Segment Overrun", "Bad TSS", "Segment Not Present",
+                                   "Stack Fault", "General Protection Fault!", "Page Fault",
+                                   "Unknown Interrupt", "Coprocessor Fault", "Alignment Check Exception",
+                                   "Machine Check Exception", "SIMD fp Exception",
+                                   "Virtualization Exception", "Reserved", "Reserved", "Reserved",
+                                   "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved",
+                                   "Reserved"};
 
 extern "C"
 {
@@ -255,10 +262,10 @@ void irqHandler(RegistersState *state) {
     // If this interrupt involved the slave.
     if (state->int_no >= 40) {
         // Send reset signal to slave.
-        setPortByte(0xA0, 0x20);
+        Port<Byte, 0xA0>::write(0x20);
     }
     // Send reset signal to master. (As well as slave, if necessary).
-    setPortByte(0x20, 0x20);
+    Port<Byte, 0x20>::write(0x20);
 
     if (interruptHandlers[state->int_no]) {
         kPanic("About to handle stuff");
