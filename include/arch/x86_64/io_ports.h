@@ -18,12 +18,12 @@ class Port<Byte, port> {
 public:
     static Byte read() {
         Byte ret;
-        __asm__ __volatile__("inb %1, %0" : "=a"(ret) : "dN"(port));
+        asm volatile("inb %1, %0" : "=a"(ret) : "dN"(port));
         return ret;
     }
 
     static void write(Byte value) {
-        __asm__ __volatile__("outb %1, %0" : : "dN"(port), "a"(value));
+        asm volatile("outb %1, %0" : : "dN"(port), "a"(value));
     }
 };
 
@@ -33,12 +33,12 @@ class Port<uint16_t, port> {
 public:
     static uint16_t read() {
         uint16_t ret;
-        __asm__ __volatile__("inw %1, %0" : "=a"(ret) : "dN"(port));
+        asm volatile("inw %1, %0" : "=a"(ret) : "dN"(port));
         return ret;
     }
 
     static void write(uint16_t value) {
-        __asm__ __volatile__("outw %1, %0" : : "dN"(port), "a"(value));
+        asm volatile("outw %1, %0" : : "dN"(port), "a"(value));
     }
 };
 
