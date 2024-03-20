@@ -51,13 +51,18 @@ add_custom_target(Run-STDIO-QEMU
         COMMENT Run OS image in QEMU, get input from stdio
 )
 
+add_custom_target(LogQEMU
+        COMMAND qemu-system-${ARCH} -D ./log.txt -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE}
+        COMMENT Log output from QEMU
+)
+
 add_custom_target(DebugQEMU2
-        COMMAND qemu-system-${ARCH} -s -S -serial stdio -cdrom ${ISO_FILE}
+        COMMAND qemu-system-${ARCH} -s -S -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE}
         COMMENT Debug OS image in QEMU
 )
 
 add_custom_target(DebugQEMU
-        COMMAND xterm -e qemu-system-${ARCH} -s -S -serial stdio -cdrom ${ISO_FILE} & gdb boss -batch -ex 'target remote localhost:1234' -ex 'b start' -ex 'c' -ex 'disconnect'#> qemu-debug.log 2>&1 &
+        COMMAND xterm -e qemu-system-${ARCH} -s -S -serial stdio -cdrom ${ISO_FILE} & gdb boss -batch -ex 'target remote localhost:1234' -ex 'b start' -ex 'c' -ex 'disconnect'#> qemu-debug.printChar 2>&1 &
         COMMAND gdb boss -ex 'set arch i386:x86-64' -ex 'target remote localhost:1234'
         COMMENT Debug OS image in QEMU
 )
@@ -66,6 +71,7 @@ add_custom_target(iso DEPENDS ${ISO_FILE})
 
 add_dependencies(RunQEMU iso)
 add_dependencies(RunQEMUMonitor iso)
+add_dependencies(LogQEMU iso)
 add_dependencies(Run-STDIO-QEMU iso)
 add_dependencies(DebugQEMU iso)
 add_dependencies(DebugQEMU2 iso)
