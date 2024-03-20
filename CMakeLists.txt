@@ -52,7 +52,8 @@ add_custom_target(Run-STDIO-QEMU
 )
 
 add_custom_target(LogQEMU
-        COMMAND qemu-system-${ARCH} -D ./log.txt -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE}
+        # -d int -no-reboot
+        COMMAND qemu-system-${ARCH} -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE}
         COMMENT Log output from QEMU
 )
 

@@ -7,7 +7,6 @@ void f() {
     int x;
     // Logger::instance().println("[MAIN] IN F, x=%X", reinterpret_cast<uint64_t>(&x));
     Printer::instance().println("[MAIN] in f");
-    asm volatile ("1: jmp 1b");
 }
 
 extern "C" void kernel_main([[maybe_unused]] void *multiboot) {
@@ -34,10 +33,8 @@ extern "C" void kernel_main([[maybe_unused]] void *multiboot) {
     enableInterrupts();
     Logger::instance().println("Enabled interrupts");
     while(true) {
-        for(int i = 1; i <= 100000; i++) {
-
-        }
-        Logger::instance().println("Still here mate");
+        haltCpu();
     }
+
     // Printer::instance().print_hex(reinterpret_cast<uint64_t>(multiboot));
 }
