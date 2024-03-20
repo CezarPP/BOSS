@@ -78,8 +78,8 @@ extern defHandler
   global isr%1
   isr%1:
   	cli
-  	push Byte 0
-    push Byte %1
+  	push byte 0
+    push byte %1
     jmp isr_common_stub
 %endmacro
 
@@ -89,7 +89,7 @@ extern defHandler
   isr%1:
     cli
     ;interrupt verctor number pushed by cpu
-    push Byte %1
+    push byte %1
     jmp isr_common_stub
 %endmacro
 
@@ -97,8 +97,8 @@ extern defHandler
   global irq%1
   irq%1:
   	cli
-    push Byte 0
-    push Byte %2
+    push byte 0
+    push byte %2
     jmp irq_common_stub
 %endmacro
 
