@@ -40,7 +40,7 @@ add_custom_target(RunQEMU
 )
 
 add_custom_target(RunQEMUMonitor
-        COMMAND qemu-system-${ARCH} -cdrom ${ISO_FILE} -monitor telnet::4444,server,nowait
+        COMMAND qemu-system-${ARCH} -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE} -monitor telnet::4444,server,nowait
         # telnet localhost 4444
         # sendkey ctrl-alt-delete
         COMMENT Run OS image in QEMU with monitor

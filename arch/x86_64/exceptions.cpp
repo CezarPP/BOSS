@@ -5,7 +5,7 @@
  *      Author: Cezar PP
  */
 #include "../../include/arch/x86_64/exceptions.h"
-#include "util/print.h"
+#include "arch/x86_64/logging.h"
 
 
 void kPanicAt(const char *msg, const char *file, const unsigned int line) {
@@ -14,11 +14,9 @@ void kPanicAt(const char *msg, const char *file, const unsigned int line) {
     uint64_t rax, rbx, rcx, rdx, rdi, rsi, rbp, rsp, r8, r9, r10, r11, r12, r13,
             r14, r15, cr0, cr2, cr3; //rip, rflags
 
-    Printer::instance().print_clear();
-    Printer::instance().print_str("I am panicking my friend.");
-    Printer::instance().print_str(msg);
-    Printer::instance().print_str(file);
-    Printer::instance().print_hex(line);
+    Logger::instance().println("I am panicking my friend.");
+    Logger::instance().println(msg);
+    Logger::instance().println("In file %s, at line %d", file, line);
 
     asm("mov %%rax, %0;\
 		 	mov %%rbx, %1;\

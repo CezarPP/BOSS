@@ -1,12 +1,43 @@
-#include "util/print.h"
 #include "arch/x86_64/interrupts.h"
+#include "drivers/keyboard.h"
+#include "arch/x86_64/logging.h"
+#include "util/console_printer.h"
+
+void f() {
+    int x;
+    // Logger::instance().println("[MAIN] IN F, x=%X", reinterpret_cast<uint64_t>(&x));
+    Printer::instance().println("[MAIN] in f");
+    asm volatile ("1: jmp 1b");
+}
 
 extern "C" void kernel_main([[maybe_unused]] void *multiboot) {
     Printer::instance().print_clear();
-    Printer::instance().print_set_color(PRINTER_COLORS::PRINT_COLOR_YELLOW, PRINTER_COLORS::PRINT_COLOR_BLACK);
+    Printer::instance().printSetColor(PRINTER_COLORS::PRINT_COLOR_YELLOW, PRINTER_COLORS::PRINT_COLOR_BLACK);
+
+
+    if (Logger::instance().init()) {
+        Printer::instance().println("Logger could not be initialized\nExiting...");
+        return;
+    }
+
+    Logger::instance().println("START OF OS");
 
     setupInterrupts();
 
-    Printer::instance().print_str("[KERNEL MAIN] Welcome to our 64-bit kernel!");
+
+    KeyboardDriver::activate();
+    setInterruptHandler(0x21, KeyboardDriver::handleInterrupt);
+    setInterruptHandler(0x20, f);
+
+    Printer::instance().println("[KERNEL MAIN] Welcome to our 64-bit kernel!\n");
+    Logger::instance().println("Enabling interrupts");
+    enableInterrupts();
+    Logger::instance().println("Enabled interrupts");
+    while(true) {
+        for(int i = 1; i <= 100000; i++) {
+
+        }
+        Logger::instance().println("Still here mate");
+    }
     // Printer::instance().print_hex(reinterpret_cast<uint64_t>(multiboot));
 }

@@ -1,4 +1,13 @@
-#include "util/print.h"
+/*
+ * console_printer.cpp
+ *
+ *  Created on: 3/20/24.
+ *      Author: Cezar PP
+ */
+
+
+
+#include "../include/util/console_printer.h"
 
 
 void Printer::clear_row(size_t row) {
@@ -36,7 +45,7 @@ void Printer::print_newline() {
     clear_row(NUM_COLS - 1);
 }
 
-void Printer::print_char(char character) {
+void Printer::printChar(char character) {
     if (character == '\n') {
         print_newline();
         return;
@@ -54,18 +63,18 @@ void Printer::print_char(char character) {
     col_++;
 }
 
-void Printer::print_str(const char *str) {
+void Printer::printStr(const char *str) {
     for (size_t i = 0; str[i] != '\0'; i++) {
-        print_char(str[i]);
+        printChar(str[i]);
     }
 }
 
-void Printer::print_set_color(PRINTER_COLORS foreground, PRINTER_COLORS background) {
+void Printer::printSetColor(PRINTER_COLORS foreground, PRINTER_COLORS background) {
     color = static_cast<uint8_t>(foreground) | (static_cast<uint8_t>(background) << 4);
 }
 
-void Printer::print_hex(uint64_t num) {
-    print_str("0x");
+/*void Printer::print_hex(uint64_t num) {
+    printStr("0x");
 
     bool leading = true;
     for (int i = 60; i >= 0; i -= 4) {
@@ -75,13 +84,13 @@ void Printer::print_hex(uint64_t num) {
         }
         leading = false;
         if (temp >= 0xA) {
-            print_char(temp - 0xA + 'A');
+            printChar(temp - 0xA + 'A');
         } else {
-            print_char(temp + '0');
+            printChar(temp + '0');
         }
     }
 
     if (leading) {
-        print_char('0');
+        printChar('0');
     }
-}
+}*/

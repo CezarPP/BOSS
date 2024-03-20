@@ -2,6 +2,7 @@
 
 #include "stdint.h"
 #include "std/extra_std.h"
+#include "util/types.h"
 
 inline __attribute__((always_inline)) void enableInterrupts() {
     asm volatile("sti");
@@ -31,3 +32,4 @@ static_assert(AssertSize<RegistersState, 176>());
 typedef void (*InterruptHandler)();
 
 void setupInterrupts();
+void setInterruptHandler(Byte num, InterruptHandler handler);

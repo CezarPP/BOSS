@@ -2,7 +2,7 @@
 #include "arch/x86_64/io_ports.h"
 #include "std/memory.h"
 #include "arch/x86_64/exceptions.h"
-#include "util/print.h"
+#include "arch/x86_64/logging.h"
 
 constexpr auto NUM_IDT_ENTRIES = 256;
 
@@ -225,7 +225,7 @@ void setupInterrupts() {
         idtSetGate(i, (Address) defaultIRQ, SYSTEM_CS, IDT_FLAG);
     }
     idtLoad();
-    Printer::instance().print_str("[KERNEL] Finished setting up interrupts\n");
+    Logger::instance().println("[KERNEL] Finished setting up interrupts");
 }
 
 const char *exceptionMessages[] = {"Division By Zero", "Debug",
@@ -244,20 +244,26 @@ extern "C"
 
 void isrHandler(RegistersState *state) {
     const auto int_no = state->int_no;
+
+    Logger::instance().println("In ISR handler no: %X", int_no);
     if (int_no < 32) {
         // TODO kException(state, exceptionMessages[int_no]);
+        Logger::instance().println("[INTERRUPTS] Called exception ISR nr: %X", int_no);
         kPanic("Not implemented");
     } else {
         if (interruptHandlers[int_no]) {
+            Logger::instance().println("[INTERRUPTS] Calling ISR handler nr: %X", int_no);
             auto handler = interruptHandlers[int_no];
             handler();
         } else {
+            Logger::instance().println("[INTERRUPTS] Called not registered ISR nr: %X", int_no);
             kPanic("Unhandled interrupt!");
         }
     }
 }
 
 void irqHandler(RegistersState *state) {
+    Logger::instance().println("In IRQ handler nr: %X", state->int_no);
     // Send an EOI (end of interrupt) signal to the PICs.
     // If this interrupt involved the slave.
     if (state->int_no >= 40) {
@@ -268,19 +274,23 @@ void irqHandler(RegistersState *state) {
     Port<Byte, 0x20>::write(0x20);
 
     if (interruptHandlers[state->int_no]) {
-        kPanic("About to handle stuff");
+        Logger::instance().println("[INTERRUPTS] Calling IRQ handler nr: %X", state->int_no);
         auto handler = interruptHandlers[state->int_no];
         handler();
     } else {
+        Logger::instance().println("[INTERRUPTS] Called not registered IRQ nr: %X", state->int_no);
         kPanic("Unhandled IRQ");
     }
 }
 
 void defHandler() {
+    Logger::instance().println("[INTERRUPTS] Called default interrupt handler");
     kPanic("Interrupt on unset gate!");
 }
 }
 
 void setInterruptHandler(Byte num, InterruptHandler handler) {
     interruptHandlers[num] = handler;
+    auto x = (unsigned int) num;
+    Logger::instance().println("Setup interrupts handler with number %x", x);
 }
