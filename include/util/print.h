@@ -26,6 +26,14 @@ public:
         va_end(args);
     }
 
+    void printf(const char* format, ...) {
+        va_list args;
+        va_start(args, format);
+        // Reuse printf for the main formatted output
+        this->vprintf(format, args);
+        va_end(args);
+    }
+
     void vprintf(const char *format, va_list args) {
         for (const char *p = format; *p != '\0'; p++) {
             if (*p != '%') {

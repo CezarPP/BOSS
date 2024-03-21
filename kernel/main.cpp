@@ -6,7 +6,7 @@
 void f() {
     int x;
     // Logger::instance().println("[MAIN] IN F, x=%X", reinterpret_cast<uint64_t>(&x));
-    Printer::instance().println("[MAIN] in f");
+    // Printer::instance().println("[MAIN] in f");
 }
 
 extern "C" void kernel_main([[maybe_unused]] void *multiboot) {

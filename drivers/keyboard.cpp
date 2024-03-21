@@ -6,6 +6,7 @@
  */
 
 #include "drivers/keyboard.h"
+#include "util/console_printer.h"
 
 
 void KeyboardDriver::activate() {
@@ -154,12 +155,14 @@ void KeyboardDriver::handleInterrupt_() {
                 break;
 
             default: {
-                Logger::instance().println("Pressed key %c", (char) key);
+                // Printer::instance().println("Pressed key %c", (char) key);
+                // Logger::instance().println("Pressed key %c", (char) key);
                 break;
             }
         }
     }
-    Logger::instance().println("End of keyboard handler for key %c", (char) key);
+    // Printer::instance().println("End of keyboard handler for key %x", (int) key);
+    // Logger::instance().println("End of keyboard handler for key %x", (int) key);
 }
 
 void KeyboardDriver::handleInterrupt() {
@@ -167,9 +170,10 @@ void KeyboardDriver::handleInterrupt() {
 }
 
 void KeyboardEventHandler::onKeyDown(char c) {
-    Logger::instance().println("Key %c down\n", c);
+    Printer::instance().printf("%c", c);
+    // Logger::instance().println("Key %c down\n", c);
 }
 
 void KeyboardEventHandler::onKeyUp(char c) {
-    Logger::instance().println("Key %c up\n", c);
+    // Logger::instance().println("Key %c up\n", c);
 }
