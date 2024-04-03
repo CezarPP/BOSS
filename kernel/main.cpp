@@ -2,9 +2,9 @@
 #include "drivers/keyboard.h"
 #include "arch/x86_64/logging.h"
 #include "util/console_printer.h"
+#include "arch/x86_64/paging.h"
 
 void f() {
-    int x;
     // Logger::instance().println("[MAIN] IN F, x=%X", reinterpret_cast<uint64_t>(&x));
     // Printer::instance().println("[MAIN] in f");
 }
@@ -28,11 +28,13 @@ extern "C" void kernel_main([[maybe_unused]] void *multiboot) {
     setInterruptHandler(0x21, KeyboardDriver::handleInterrupt);
     setInterruptHandler(0x20, f);
 
-    Printer::instance().println("[KERNEL MAIN] Welcome to our 64-bit kernel!\n");
+    Printer::instance().println("[KERNEL MAIN] Welcome to the 64-bit kernel!\n");
     Logger::instance().println("Enabling interrupts");
     enableInterrupts();
     Logger::instance().println("Enabled interrupts");
-    while(true) {
+
+    paging::init();
+    while (true) {
         haltCpu();
     }
 
