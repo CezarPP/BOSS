@@ -62,6 +62,9 @@ check_long_mode:
 	mov al, "L"
 	jmp error
 
+; Here we identify map the first 4MB of memory to be sure
+; The kernel is loaded at the first MB initially by the bootloader
+
 setup_page_tables:
 	mov eax, page_table_l3
 	or eax, 0b11 ; present, writable page
@@ -80,7 +83,8 @@ setup_page_tables:
 	mov [page_table_l2 + ecx * 8], eax ; place in lvl 2 table
 
 	inc ecx ; increment counter
-	cmp ecx, 512 ; checks if the whole table is mapped
+	cmp ecx, 4 ; checks if the whole table is mapped
+	           ; only map the first 8 MB using identity paging
 	jne .loop ; if not, continue
 
 	ret
@@ -116,6 +120,10 @@ error:
 	mov byte  [0xb800a], al
 	hlt
 
+; Page tables and stack
+; Each of the page tables is 4KB, 4 * 4KB = 16KB total
+
+; Each table entry is 8 bytes long, there are 512 entries => 512 * 8 = 4096 bytes = 4KB
 section .bss
 align 4096
 page_table_l4:
@@ -125,7 +133,7 @@ page_table_l3:
 page_table_l2:
 	resb 4096
 stack_bottom:
-	resb 4096 * 16
+	resb 4096 * 2 ; 8KB stack
 stack_top:
 
 section .rodata
