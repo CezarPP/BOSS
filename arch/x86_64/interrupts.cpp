@@ -237,7 +237,7 @@ const char *exceptionMessages[] = {"Division By Zero", "Debug",
                                    "Machine Check Exception", "SIMD fp Exception",
                                    "Virtualization Exception", "Reserved", "Reserved", "Reserved",
                                    "Reserved", "Reserved", "Reserved", "Reserved", "Reserved", "Reserved",
-                                   "Reserved"};
+                                   "Reserved", "Reserved"};
 
 extern "C"
 {
@@ -248,7 +248,8 @@ void isrHandler(RegistersState *state) {
     Logger::instance().println("In ISR handler no: %X", int_no);
     if (int_no < 32) {
         // TODO kException(state, exceptionMessages[int_no]);
-        Logger::instance().println("[INTERRUPTS] Called exception ISR nr: %X", int_no);
+        Logger::instance().println("[INTERRUPTS] Called exception ISR nr: %X, %s",
+                                   int_no, exceptionMessages[int_no]);
         kPanic("Not implemented");
     } else {
         if (interruptHandlers[int_no]) {
