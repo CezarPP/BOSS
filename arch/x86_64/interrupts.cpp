@@ -245,12 +245,12 @@ extern "C"
 void isrHandler(RegistersState *state) {
     const auto int_no = state->int_no;
 
-    Logger::instance().println("In ISR handler no: %X", int_no);
+    Logger::instance().println("[INTERRUPTS] In ISR handler no: %X", int_no);
     if (int_no < 32) {
         // TODO kException(state, exceptionMessages[int_no]);
         Logger::instance().println("[INTERRUPTS] Called exception ISR nr: %X, %s",
                                    int_no, exceptionMessages[int_no]);
-        kPanic("Not implemented");
+        kPanic("[INTERRUPTS] Exceptions not implemented");
     } else {
         if (interruptHandlers[int_no]) {
             Logger::instance().println("[INTERRUPTS] Calling ISR handler nr: %X", int_no);
@@ -258,13 +258,13 @@ void isrHandler(RegistersState *state) {
             handler();
         } else {
             Logger::instance().println("[INTERRUPTS] Called not registered ISR nr: %X", int_no);
-            kPanic("Unhandled interrupt!");
+            kPanic("[INTERRUPTS] Unhandled interrupt!");
         }
     }
 }
 
 void irqHandler(RegistersState *state) {
-    Logger::instance().println("In IRQ handler nr: %X", state->int_no);
+    Logger::instance().println("[INTERRUPTS] In IRQ handler nr: %X", state->int_no);
     // Send an EOI (end of interrupt) signal to the PICs.
     // If this interrupt involved the slave.
     if (state->int_no >= 40) {
@@ -280,18 +280,18 @@ void irqHandler(RegistersState *state) {
         handler();
     } else {
         Logger::instance().println("[INTERRUPTS] Called not registered IRQ nr: %X", state->int_no);
-        kPanic("Unhandled IRQ");
+        kPanic("[INTERRUPTS] Unhandled IRQ");
     }
 }
 
 void defHandler() {
     Logger::instance().println("[INTERRUPTS] Called default interrupt handler");
-    kPanic("Interrupt on unset gate!");
+    kPanic("[INTERRUPTS] Interrupt on unset gate!");
 }
 }
 
 void setInterruptHandler(Byte num, InterruptHandler handler) {
     interruptHandlers[num] = handler;
     auto x = (unsigned int) num;
-    Logger::instance().println("Setup interrupts handler with number %x", x);
+    Logger::instance().println("[INTERRUPTS] Setup interrupts handler with number %x", x);
 }
