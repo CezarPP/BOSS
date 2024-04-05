@@ -18,3 +18,5 @@ inline void kPanic [[gnu::always_inline]](const char *msg) {
 }
 
 void kException(RegistersState *reg_state, const char *exceptionMsg);
+
+__attribute__((always_inline)) void kAssert(bool expression, const char *message = "");

@@ -7,6 +7,10 @@
 #include "../../include/arch/x86_64/exceptions.h"
 #include "arch/x86_64/logging.h"
 
+void kAssert(bool expression, const char *message) {
+    if (!expression)
+        kPanic(message);
+}
 
 void kPanicAt(const char *msg, const char *file, const unsigned int line) {
     disableInterrupts();
