@@ -14,9 +14,9 @@ void kPanicAt(const char *msg, const char *file, const unsigned int line) {
     uint64_t rax, rbx, rcx, rdx, rdi, rsi, rbp, rsp, r8, r9, r10, r11, r12, r13,
             r14, r15, cr0, cr2, cr3; //rip, rflags
 
-    Logger::instance().println("I am panicking my friend.");
+    Logger::instance().println("[PANIC] I am panicking my friend.");
     Logger::instance().println(msg);
-    Logger::instance().println("In file %s, at line %d", file, line);
+    Logger::instance().println("[PANIC] In file %s, at line %d", file, line);
 
     asm("mov %%rax, %0;\
 		 	mov %%rbx, %1;\
