@@ -31,4 +31,22 @@ namespace std {
     constexpr const T &max(const T &a, const T &b, Compare comp) {
         return comp(a, b) ? a : b;
     }
+
+    // Version 1 / 5
+    template<typename Iterator, typename UnaryPredicate>
+    constexpr bool all_of(Iterator first, Iterator last, UnaryPredicate pred) {
+        for (; first != last; ++first) {
+            if (!pred(*first)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template<typename ForwardIterator, typename T>
+    constexpr void fill(ForwardIterator first, ForwardIterator last, const T &value) {
+        for (; first != last; ++first) {
+            *first = value;
+        }
+    }
 }
