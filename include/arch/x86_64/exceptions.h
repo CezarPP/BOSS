@@ -11,9 +11,9 @@
 
 void dump_regstate(RegistersState *reg_state);
 
-[[noreturn]] void kPanicAt(const char *msg, const char *file, unsigned int line);
+void kPanicAt(const char *msg, const char *file, unsigned int line);
 
-[[noreturn]] inline void kPanic [[gnu::always_inline]](const char *msg) {
+inline void kPanic [[gnu::always_inline]](const char *msg) {
     kPanicAt(msg, __FILE__, __LINE__);
 }
 
