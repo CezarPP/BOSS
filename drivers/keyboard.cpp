@@ -26,7 +26,7 @@ bool shiftPressed = false;
 bool ctrlPressed = false;
 
 void KeyboardDriver::handleInterrupt_() {
-    Logger::instance().println("Handling keyboard interrupt");
+    // Logger::instance().println("Handling keyboard interrupt");
     uint8_t key = dataPort::read();
     bool released = key & 0x80; // Check if the key was released
     key &= 0x7F; // Mask out the release bit to get the scancode
