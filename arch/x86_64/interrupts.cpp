@@ -263,8 +263,13 @@ void isrHandler(RegistersState *state) {
     }
 }
 
+bool isInterestingInterrupt(uint64_t intNo) {
+    return intNo != 0x20 && intNo != 0x21;
+}
+
 void irqHandler(RegistersState *state) {
-    Logger::instance().println("[INTERRUPTS] In IRQ handler nr: %X", state->int_no);
+    if (isInterestingInterrupt(state->int_no))
+        Logger::instance().println("[INTERRUPTS] In IRQ handler nr: %X", state->int_no);
     // Send an EOI (end of interrupt) signal to the PICs.
     // If this interrupt involved the slave.
     if (state->int_no >= 40) {
@@ -275,7 +280,8 @@ void irqHandler(RegistersState *state) {
     Port<Byte, 0x20>::write(0x20);
 
     if (interruptHandlers[state->int_no]) {
-        Logger::instance().println("[INTERRUPTS] Calling IRQ handler nr: %X", state->int_no);
+        if (isInterestingInterrupt(state->int_no))
+            Logger::instance().println("[INTERRUPTS] Calling IRQ handler nr: %X", state->int_no);
         auto handler = interruptHandlers[state->int_no];
         handler();
     } else {
