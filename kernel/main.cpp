@@ -2,8 +2,8 @@
 #include "drivers/keyboard.h"
 #include "arch/x86_64/logging.h"
 #include "util/console_printer.h"
-#include "allocators/allocator.h"
 #include "multiboot/multiboot.h"
+#include "allocators/virtual_allocator.h"
 
 void f() {
     // Logger::instance().println("[MAIN] IN F, x=%X", reinterpret_cast<uint64_t>(&x));
@@ -41,10 +41,17 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     Logger::instance().println("[KERNEL MAIN] Enabled interrupts");
 
     // [MULTIBOOT]
-    parseMultiboot(multibootAndMagic);
+    std::pair<uint64_t, uint64_t> memory = parseMultiboot(multibootAndMagic);
 
     // [PAGING]
     paging::init();
+
+    // [PHYSICAL ALLOCATOR] [VIRTUAL ALLOCATOR]
+    // The virtual allocator also initializes the physical allocator
+    Logger::instance().println("[MAIN] Starting to initialize the Physical and Virtual allocators");
+    memory = paging::physicalExcludingEarly(memory);
+    VirtualAllocator virtualAllocator(memory.first, memory.second);
+    Logger::instance().println("[MAIN] Physical and Virtual allocators have been initialized");
 
 
     while (true) {
