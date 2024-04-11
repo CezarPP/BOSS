@@ -8,16 +8,22 @@
 #pragma once
 
 #include "interrupts.h"
+#include "../../std/source_location.h"
 
-void dump_regstate(RegistersState *reg_state);
+void dumpRegstate(RegistersState *reg_state);
 
-void kPanicAt(const char *msg, const char *file, unsigned int line);
+void kPanicAt(const char *message, std::source_location location);
 
-#define kPanic(msg) kPanicAt(msg, __FILE__, __LINE__)
+inline void kPanic(const char *message, std::source_location location = std::source_location::current()) {
+    kPanicAt(message, location);
+}
 
-void kException(RegistersState *reg_state, const char *exceptionMsg);
+// void kException(RegistersState *reg_state, const char *exceptionMsg);
 
-#define kAssert(expression, message) \
-    if (!(expression)) { \
-        kPanic(message); \
+template<typename Expr>
+inline void kAssert(Expr expression, const char *message,
+                    std::source_location location = std::source_location::current()) {
+    if (!expression) {
+        kPanicAt(message, location);
     }
+}
