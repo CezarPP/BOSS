@@ -15,6 +15,7 @@ set(CMAKE_CXX_LINK_EXECUTABLE "<CMAKE_CXX_COMPILER> <CMAKE_CXX_LINK_FLAGS> -o <T
 set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
 set(CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> -I${CMAKE_CURRENT_SOURCE_DIR}/src/include/arch/${ARCH}/asm/ -f ${CMAKE_ASM_NASM_OBJECT_FORMAT} -o <OBJECT> <SOURCE>")
 add_compile_options(-g -m64 -ffreestanding -nostdlib -mno-red-zone -fno-rtti -mno-mmx -mno-sse -mno-sse2 -mno-sse3 -mno-3dnow -nodefaultlibs -Wall -Wextra -Wtype-limits -Wmaybe-uninitialized -fno-exceptions)
+# -g compile with debug symbols
 
 include_directories(include/)
 
