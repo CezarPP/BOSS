@@ -27,7 +27,7 @@ void Printer::print_clear() {
     }
 }
 
-void Printer::print_newline() {
+void Printer::printNewline() {
     col_ = 0;
 
     if (row_ < NUM_ROWS - 1) {
@@ -45,14 +45,35 @@ void Printer::print_newline() {
     clear_row(NUM_COLS - 1);
 }
 
+void Printer::printBackspace() {
+    if (col_ > 0) {
+        // Move cursor back one column
+        col_--;
+    } else if (row_ > 0) {
+        col_ = NUM_COLS - 1;
+        // Move cursor back to the end of the previous row
+        row_--;
+    } else {
+        // At the start of the buffer, no effect
+        return;
+    }
+    buffer[col_ + NUM_COLS * row_] = {
+            .character = ' ',  // Replace the character with a space
+            .color = color,
+    };
+}
+
 void Printer::printChar(char character) {
     if (character == '\n') {
-        print_newline();
+        printNewline();
+        return;
+    } else if (character == '\b') {
+        printBackspace();
         return;
     }
 
     if (col_ >= NUM_COLS) {
-        print_newline();
+        printNewline();
     }
 
     buffer[col_ + NUM_COLS * row_] = {

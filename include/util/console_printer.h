@@ -49,7 +49,9 @@ class Printer : public PrinterInterface<Printer> {
     // Private constructor
     Printer() = default;
 
-    void print_newline();
+    void printNewline();
+
+    void printBackspace();
 
 public:
     Printer(const Printer &) = delete;
