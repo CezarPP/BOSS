@@ -7,12 +7,14 @@
 
 #pragma once
 
+#include <stdint.h>
+
 namespace std {
     // ptrdiff_t is used for differences between pointers
     using ptrdiff_t = long long; // On x86_64, it's typically a 64-bit signed integer
 
     // size_t is used for sizes of objects
-    using size_t = unsigned long long; // On x86_64, it's typically a 64-bit unsigned integer
+    typedef uint64_t size_t;
 
     // max_align_t is a type whose alignment requirement is at least as strict as that of every scalar type
     struct max_align_t {
@@ -85,6 +87,3 @@ namespace std {
 #ifndef NULL
 #define NULL 0
 #endif
-
-// offsetof is a macro that gives the offset of a field in a struct.
-#define offsetof(P, D) __builtin_offsetof(P, D)

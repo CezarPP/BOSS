@@ -1,4 +1,4 @@
-#include "std/memory.h"
+#include "std/cstring.h"
 
 void *memcpy(void *dest, const void *src, size_t n) {
     auto d = static_cast<char *>(dest);

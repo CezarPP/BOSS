@@ -7,7 +7,9 @@
 
 #pragma once
 
-#include "types.h"
+#include "stdint.h"
+
+typedef uint64_t size_t;
 
 static_assert(sizeof(size_t) == sizeof(unsigned long long));
 

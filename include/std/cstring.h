@@ -1,4 +1,8 @@
-#include "util/types.h"
+#pragma once
+
+#include <stdint.h>
+
+typedef uint64_t size_t;
 
 void *memcpy(void *dest, const void *src, size_t n);
 
