@@ -12,7 +12,47 @@
 class VirtualAllocator {
 private:
     uint64_t KERNEL_VIRTUAL_START;
+    static VirtualAllocator *instance_; /// Pointer to the singleton instance
 public:
+    VirtualAllocator(const VirtualAllocator &) = delete;
+
+    VirtualAllocator &operator=(const VirtualAllocator &) = delete;
+
+    VirtualAllocator(VirtualAllocator &&) = delete;
+
+    VirtualAllocator &operator=(VirtualAllocator &&) = delete;
+
+    static VirtualAllocator *instance() {
+        return instance_;
+    }
+
+    static void init(size_t memBase, size_t memSize) {
+        static VirtualAllocator alloc(memBase, memSize);
+        instance_ = &alloc;
+
+
+        Logger::instance().println("[V_ALLOC] Testing...");
+        char *myBigString = (char *) instance_->vAlloc(1);
+        for (size_t i = 0; i < paging::PAGE_SIZE; i++)
+            myBigString[i] = 'A';
+
+        char *myBigString2 = (char *) instance_->vAlloc(2);
+        for (size_t i = 0; i < paging::PAGE_SIZE * 2; i++)
+            myBigString2[i] = 'A';
+
+        instance_->vFree(myBigString, 1);
+
+        // Should be the same as myBigString
+        char *myBigString3 = (char *) instance_->vAlloc(1);
+        kAssert(myBigString == myBigString3, "[V_ALLOC] These addresses should be the same");
+
+        instance_->vFree(myBigString2, 2);
+        instance_->vFree(myBigString3, 1);
+
+        Logger::instance().println("[V_ALLOC] Finished testing.");
+    }
+
+
     /// Physical allocator type can be changed here with no additional modifications
     physical_allocator::BasicAllocator allocator;
 
@@ -20,26 +60,6 @@ public:
         KERNEL_VIRTUAL_START =
                 paging::PHYSICAL_ALLOCATOR_VIRTUAL_START + allocator.neededMemoryPages() * paging::PAGE_SIZE;
         Logger::instance().println("[V_ALLOC] Kernel Virtual start is %X", KERNEL_VIRTUAL_START);
-
-        Logger::instance().println("[V_ALLOC] Testing...");
-        char *myBigString = (char *) vAlloc(1);
-        for (size_t i = 0; i < paging::PAGE_SIZE; i++)
-            myBigString[i] = 'A';
-
-        char *myBigString2 = (char *) vAlloc(2);
-        for (size_t i = 0; i < paging::PAGE_SIZE * 2; i++)
-            myBigString2[i] = 'A';
-
-        vFree(myBigString, 1);
-
-        // Should be the same as myBigString
-        char *myBigString3 = (char *) vAlloc(1);
-        kAssert(myBigString == myBigString3, "[V_ALLOC] These addresses should be the same");
-
-        vFree(myBigString2, 2);
-        vFree(myBigString3, 1);
-
-        Logger::instance().println("[V_ALLOC] Finished testing.");
     }
 
 
@@ -77,3 +97,5 @@ public:
         allocator.free(physicalAddress, pages);
     }
 };
+
+VirtualAllocator *VirtualAllocator::instance_ = nullptr;
