@@ -8,21 +8,22 @@
 #pragma once
 
 #include "allocator.h"
+#include "std/bitset.h"
 
 namespace physical_allocator {
     /*!
      * A basic version of a physical allocator
      *
-     * The Basic Allocator will keep a byte for each page frame from memBase up to memBase + memSize (exclusive)
+     * The Bitmap Allocator will keep a bit for each page frame from memBase up to memBase + memSize (exclusive)
      * Allocation iterates through all pages until it find a free one
      * Freeing just frees the pages the user requested
      */
-    class BasicAllocator : public Allocator<BasicAllocator> {
+    class BitmapAllocator : public Allocator<BitmapAllocator> {
     private:
         bool *isFree_;
         size_t mxPages;
     public:
-        BasicAllocator(size_t memBase, size_t memSize) : Allocator(memBase, memSize) {
+        BitmapAllocator(size_t memBase, size_t memSize) : Allocator(memBase, memSize) {
             kAssert(paging::pageAligned(this->memBase), "memBase is not page aligned");
 
             this->mxPages = this->memSize / PAGE_SIZE;

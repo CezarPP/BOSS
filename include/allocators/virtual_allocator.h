@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "basic_allocator.h"
+#include "bitmap_allocator.h"
 
 class VirtualAllocator {
 private:
@@ -54,7 +54,7 @@ public:
 
 
     /// Physical allocator type can be changed here with no additional modifications
-    physical_allocator::BasicAllocator allocator;
+    physical_allocator::BitmapAllocator allocator;
 
     VirtualAllocator(size_t memBase, size_t memSize) : allocator(memBase, memSize) {
         KERNEL_VIRTUAL_START =
