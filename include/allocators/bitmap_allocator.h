@@ -21,15 +21,15 @@ namespace physical_allocator {
     class BitmapAllocator : public Allocator<BitmapAllocator> {
     private:
         bool *isFree_;
-        size_t mxPages;
+        size_t cntPages_;
     public:
         BitmapAllocator(size_t memBase, size_t memSize) : Allocator(memBase, memSize) {
             kAssert(paging::pageAligned(this->memBase), "memBase is not page aligned");
 
-            this->mxPages = this->memSize / PAGE_SIZE;
+            this->cntPages_ = this->memSize / PAGE_SIZE;
             this->isFree_ = (bool *) this->allocatorMemory;
 
-            std::fill(this->isFree_, this->isFree_ + this->mxPages, false);
+            std::fill(this->isFree_, this->isFree_ + this->cntPages_, false);
         }
 
         /*!
@@ -38,7 +38,7 @@ namespace physical_allocator {
          * @return The physical address of the first page
          */
         size_t allocateImplementation(size_t cntPages) {
-            for (size_t i = 0; i < mxPages - cntPages; i++) {
+            for (size_t i = 0; i < cntPages_ - cntPages; i++) {
                 if (std::all_of(isFree_ + i, isFree_ + i + cntPages, [](bool x) {
                     return !x;
                 })) {
@@ -69,8 +69,9 @@ namespace physical_allocator {
          * @return The number of pages of memory that should be mapped for the allocator
          */
         constexpr size_t neededMemoryPages() {
-            auto cntPages = memSize / PAGE_SIZE;
-            return cntPages / PAGE_SIZE + ((cntPages % PAGE_SIZE == 0) ? 0 : 1);
+            auto cntPages = this->memSize / PAGE_SIZE;
+            /// We need one byte for each page, so just the number of pages that fit those bytes
+            return toPages(cntPages);
         }
     };
 }

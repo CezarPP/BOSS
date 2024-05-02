@@ -22,9 +22,18 @@ namespace physical_allocator {
         /// The size of the allocator's physical memory, in bytes
         size_t memSize;
 
-        /// The start of the allocator's own memory
-        /// This will hold data structures specific to each allocator
+        /// The start of the allocator's own memory, holds data structures specific to each allocator
         void *allocatorMemory;
+
+
+        /*!
+         * @param mem The number of bytes to be converted to pages
+         * @return The amount of pages that could fit mem bytes
+         */
+        constexpr static size_t toPages(size_t mem) {
+            return mem / PAGE_SIZE + ((mem % PAGE_SIZE == 0) ? 0 : 1);
+
+        }
 
         /*!
          * Allocates cntPages pages, consecutive in physical memory
