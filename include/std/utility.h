@@ -51,4 +51,20 @@ namespace std {
     constexpr T &&forward(typename remove_reference<T>::type &&t) {
         return static_cast<T &&>(t);
     }
+
+    /**
+     * Swaps 2 values using std::move
+     * noexcept specification not necessary, since the kernel doesn't use exceptions
+     * @tparam T
+     * @param a
+     * @param b
+     */
+    template<typename T>
+    requires (std::is_move_constructible_v<T> && std::is_move_assignable_v<T>)
+    void swap(T &a, T &b) /*noexcept(std::is_nothrow_move_constructible<T>::value &&
+                                   std::is_nothrow_move_assignable<T>::value) */ {
+        T temp = std::move(a);
+        a = std::move(b);
+        b = std::move(temp);
+    }
 }
