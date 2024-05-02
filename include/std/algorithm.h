@@ -32,6 +32,26 @@ namespace std {
         return comp(a, b) ? a : b;
     }
 
+    // equal(1)
+    template<class InputIt1, class InputIt2>
+    constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
+        for (; first1 != last1; ++first1, ++first2)
+            if (*first1 != *first2)
+                return false;
+
+        return true;
+    }
+
+    // equal(3)
+    template<class InputIt1, class InputIt2, class BinaryPred>
+    constexpr bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPred p) {
+        for (; first1 != last1; ++first1, ++first2)
+            if (!p(*first1, *first2))
+                return false;
+
+        return true;
+    }
+
     // Version 1 / 5
     template<typename Iterator, typename UnaryPredicate>
     constexpr bool all_of(Iterator first, Iterator last, UnaryPredicate pred) {
