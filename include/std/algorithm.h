@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "compare.h"
+
 namespace std {
     // Version (1): Using the default less-than comparison
     template<class T>
@@ -51,6 +53,21 @@ namespace std {
 
         return true;
     }
+
+    // lexicographical_compare_three_way (1)
+    template<class I1, class I2, class Cmp>
+    constexpr auto lexicographical_compare_three_way(I1 f1, I1 l1, I2 f2, I2 l2, Cmp comp) -> decltype(comp(*f1, *f2)) {
+        bool exhaust1 = (f1 == l1);
+        bool exhaust2 = (f2 == l2);
+        for (; !exhaust1 && !exhaust2; exhaust1 = (++f1 == l1), exhaust2 = (++f2 == l2))
+            if (auto c = comp(*f1, *f2); c != 0)
+                return c;
+
+        return !exhaust1 ? std::strong_ordering::greater :
+               !exhaust2 ? std::strong_ordering::less :
+               std::strong_ordering::equal;
+    }
+
 
     // Version 1 / 5
     template<typename Iterator, typename UnaryPredicate>
