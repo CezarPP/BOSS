@@ -12,7 +12,7 @@
 class VirtualAllocator {
 private:
     /// Physical allocator type can be changed here with no additional modifications
-    physical_allocator::BitmapAllocator allocator;
+    physical_allocator::BitmapAllocator physicalAllocator;
     /// The virtual address where the kernel can start allocating memory
     uint64_t KERNEL_VIRTUAL_START;
     static VirtualAllocator *instance_; /// Pointer to the singleton instance
@@ -34,7 +34,7 @@ public:
         instance_ = &alloc;
 
         Logger::instance().println("[V_ALLOC] Testing physical allocator...");
-        physical_allocator::tests::runAllTests(alloc.allocator);
+        physical_allocator::tests::runAllTests(alloc.physicalAllocator);
 
 
         Logger::instance().println("[V_ALLOC] Testing...");
@@ -59,9 +59,9 @@ public:
     }
 
     VirtualAllocator(size_t memBase, size_t memSize)
-            : allocator(memBase, memSize),
+            : physicalAllocator(memBase, memSize),
               KERNEL_VIRTUAL_START{
-                      paging::PHYSICAL_ALLOCATOR_VIRTUAL_START + allocator.cntAllocatorPages * paging::PAGE_SIZE} {
+                      paging::PHYSICAL_ALLOCATOR_VIRTUAL_START + physicalAllocator.cntAllocatorPages * paging::PAGE_SIZE} {
         Logger::instance().println("[V_ALLOC] Kernel Virtual start is %X", KERNEL_VIRTUAL_START);
     }
 
@@ -75,8 +75,8 @@ public:
      * @return The virtual address of the first page
      */
     void *vAlloc(size_t pages) {
-        size_t physicalAddress = allocator.allocate(pages);
-        size_t virtualAddressStart = KERNEL_VIRTUAL_START + (physicalAddress - allocator.memBase);
+        size_t physicalAddress = physicalAllocator.allocate(pages);
+        size_t virtualAddressStart = KERNEL_VIRTUAL_START + (physicalAddress - physicalAllocator.memBase);
         paging::mapPages(virtualAddressStart, physicalAddress, pages);
 
         return reinterpret_cast<void *>(virtualAddressStart);
@@ -91,13 +91,13 @@ public:
     void vFree(void *virtualAddress, size_t pages) {
         auto vir = reinterpret_cast<uint64_t>(virtualAddress);
         /// Convert the virtual address back to a physical address
-        size_t physicalAddress = allocator.memBase + (vir - KERNEL_VIRTUAL_START);
+        size_t physicalAddress = physicalAllocator.memBase + (vir - KERNEL_VIRTUAL_START);
 
         /// Unmap the pages from the virtual address space
         paging::unmapPages(vir, pages);
 
         /// Free the pages in the physical allocator
-        allocator.free(physicalAddress, pages);
+        physicalAllocator.free(physicalAddress, pages);
     }
 };
 

@@ -38,7 +38,7 @@ namespace physical_allocator {
          * @return The physical address of the first page
          */
         size_t allocateImplementation(size_t cntPages) {
-            for (size_t i = 0; i < cntPages_ - cntPages; i++) {
+            for (size_t i = 0; i < cntPages_ - cntPages + 1; i++) {
                 if (std::all_of(isFree_ + i, isFree_ + i + cntPages, [](bool x) {
                     return !x;
                 })) {
@@ -59,8 +59,11 @@ namespace physical_allocator {
         void freeImplementation(size_t base, size_t cntPages) {
             kAssert(paging::pageAligned(base), "[P_ALLOC] Address to free is not page aligned");
 
+            kAssert(base >= this->memBase, "Address has to be bigger than memBase");
             auto indexStart = (base - this->memBase) / PAGE_SIZE;
             auto indexEnd = indexStart + cntPages;
+
+            kAssert(indexEnd <= cntPages_, "[P_ALLOC] Wrong index value");
 
             std::fill(isFree_ + indexStart, isFree_ + indexEnd, false);
         }

@@ -53,11 +53,12 @@ namespace physical_allocator::tests {
     /// Test that allocator can handle full allocation and de-allocation
     template<typename Allocator>
     void testFullAllocationCycle(Allocator &alloc) {
-        for (size_t i = 0; i < kMemSize / PAGE_SIZE; i++) {
+        size_t cntPages = kMemSize / PAGE_SIZE;
+        for (size_t i = 0; i < cntPages; i++) {
             size_t addr = alloc.allocate(1);
             kAssert(addr == kMemBase + i * PAGE_SIZE, "Address mismatch in full cycle allocation");
         }
-        for (size_t i = 0; i < kMemSize / PAGE_SIZE; i++) {
+        for (size_t i = 0; i < cntPages; i++) {
             alloc.free(kMemBase + i * PAGE_SIZE, 1);
         }
     }
@@ -83,19 +84,19 @@ namespace physical_allocator::tests {
 
         Logger::instance().println("Running testAllocateSinglePage...");
         testAllocateSinglePage(allocator);
-        Logger::instance().println("Success");
+        Logger::instance().println("Success!");
 
         Logger::instance().println("Running testAllocateMultiplePages...");
         testAllocateMultiplePages(allocator);
-        Logger::instance().println("Success");
+        Logger::instance().println("Success!");
 
         Logger::instance().println("Running testFullAllocationCycle...");
         testFullAllocationCycle(allocator);
-        Logger::instance().println("Success");
+        Logger::instance().println("Success!");
 
         Logger::instance().println("Running testEdgeWraparound...");
         testEdgeWraparound(allocator);
-        Logger::instance().println("Success");
+        Logger::instance().println("Success!");
     }
 }
 
