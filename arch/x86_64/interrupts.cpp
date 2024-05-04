@@ -1,6 +1,6 @@
 #include "arch/x86_64/interrupts.h"
 #include "arch/x86_64/io_ports.h"
-#include "std/memory.h"
+#include "std/cstring.h"
 #include "arch/x86_64/exceptions.h"
 #include "arch/x86_64/logging.h"
 
