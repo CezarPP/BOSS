@@ -7,10 +7,13 @@
 
 #pragma once
 
-#include "bitmap_allocator.h"
+#include "p_allocator_tests.h"
 
 class VirtualAllocator {
 private:
+    /// Physical allocator type can be changed here with no additional modifications
+    physical_allocator::BitmapAllocator allocator;
+    /// The virtual address where the kernel can start allocating memory
     uint64_t KERNEL_VIRTUAL_START;
     static VirtualAllocator *instance_; /// Pointer to the singleton instance
 public:
@@ -29,6 +32,9 @@ public:
     static void init(size_t memBase, size_t memSize) {
         static VirtualAllocator alloc(memBase, memSize);
         instance_ = &alloc;
+
+        Logger::instance().println("[V_ALLOC] Testing physical allocator...");
+        physical_allocator::tests::runAllTests(alloc.allocator);
 
 
         Logger::instance().println("[V_ALLOC] Testing...");
@@ -52,13 +58,10 @@ public:
         Logger::instance().println("[V_ALLOC] Finished testing.");
     }
 
-
-    /// Physical allocator type can be changed here with no additional modifications
-    physical_allocator::BitmapAllocator allocator;
-
-    VirtualAllocator(size_t memBase, size_t memSize) : allocator(memBase, memSize) {
-        KERNEL_VIRTUAL_START =
-                paging::PHYSICAL_ALLOCATOR_VIRTUAL_START + allocator.neededMemoryPages() * paging::PAGE_SIZE;
+    VirtualAllocator(size_t memBase, size_t memSize)
+            : allocator(memBase, memSize),
+              KERNEL_VIRTUAL_START{
+                      paging::PHYSICAL_ALLOCATOR_VIRTUAL_START + allocator.cntAllocatorPages * paging::PAGE_SIZE} {
         Logger::instance().println("[V_ALLOC] Kernel Virtual start is %X", KERNEL_VIRTUAL_START);
     }
 
