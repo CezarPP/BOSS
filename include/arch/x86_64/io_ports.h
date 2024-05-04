@@ -42,6 +42,16 @@ public:
     }
 };
 
+static Byte inb(uint16_t port) {
+    Byte ret;
+    asm volatile("inb %1, %0" : "=a"(ret) : "dN"(port));
+    return ret;
+}
+
+static void outb(uint16_t port, Byte value) {
+    asm volatile("outb %1, %0" : : "dN"(port), "a"(value));
+}
+
 /*
 Byte getPortByte(uint16_t port);
 
