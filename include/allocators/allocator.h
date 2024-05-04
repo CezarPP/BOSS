@@ -9,21 +9,67 @@
 
 #include "../arch/x86_64/phys_mm.h"
 #include "../arch/x86_64/paging.h"
+#include "std/cstddef.h"
 
 namespace physical_allocator {
     constexpr auto PAGE_SIZE = paging::PAGE_SIZE;
 
+    template<typename T>
+    class physicalStdAllocator {
+    private:
+        T *p_;
+        size_t memSize_, crtSize_ = 0;
+    public:
+        using value_type = T;
+        using size_type = std::size_t;
+        using difference_type = std::ptrdiff_t;
+
+        physicalStdAllocator(T *p, size_t memSize) noexcept: p_(p), memSize_(memSize) {}
+
+        physicalStdAllocator(const physicalStdAllocator &) noexcept = default;  // Copy constructor
+
+        ~physicalStdAllocator() = default;  // Destructor
+
+        [[nodiscard]] T *allocate(size_type n) {
+            T *p = p_ + crtSize_;
+            Logger::instance().println("Custom allocator is allocating %X objects at address %X...", n, p);
+            // Allocate memory for n objects of type T
+            kAssert(crtSize_ + n * sizeof(T) <= memSize_, "Overflowing physical allocator memory");
+            crtSize_ += n * sizeof(T);
+            return p;
+        }
+
+        void deallocate(T *p, size_type n) noexcept {
+            // Deallocating 0 bytes is alright
+            if(n != 0)
+                kPanic("This memory should not be deallocated");
+        }
+    };
+
+    template<class T1, class T2>
+    constexpr bool operator==(const physicalStdAllocator<T1> &lhs, const physicalStdAllocator<T2> &rhs) noexcept {
+        // All instances of allocator are interchangeable, hence always equal
+        return true;
+    }
+
     template<typename Derived>
     class Allocator {
-    private:
-    public:
+    protected:
         /// The physical address of the start memory
-        size_t memBase;
+        const size_t initialMemBase_;
         /// The size of the allocator's physical memory, in bytes
+        const size_t initialMemSize_;
+    public:
+        /// The physical address of the start memory that is usable for allocations
+        size_t memBase;
+        /// The size of the physical memory that is usable for allocations
         size_t memSize;
 
         /// The start of the allocator's own memory, holds data structures specific to each allocator
         void *allocatorMemory;
+
+        /// The number of pages of memory the allocator asked for (for its internal representation)
+        size_t cntAllocatorPages;
 
 
         /*!
@@ -65,20 +111,22 @@ namespace physical_allocator {
          * @param memSize The size of the memory starting at memBase
          */
         Allocator(size_t memBase, size_t memSize) :
+                initialMemBase_{memBase}, initialMemSize_{memSize},
                 memBase{memBase}, memSize{memSize},
-                allocatorMemory{reinterpret_cast<void *>(paging::PHYSICAL_ALLOCATOR_VIRTUAL_START)} {
+                allocatorMemory{reinterpret_cast<void *>(paging::PHYSICAL_ALLOCATOR_VIRTUAL_START)},
+                cntAllocatorPages{Derived::neededMemoryPages(initialMemSize_)} {
             Logger::instance().println("[P_ALLOCATOR] Initializing Allocator...");
 
             VirtualAddress virtualAddressStart = paging::PHYSICAL_ALLOCATOR_VIRTUAL_START;
             Logger::instance().println("[P_ALLOCATOR] Mapping allocator, physical %X at virtual %X...",
                                        this->memBase, virtualAddressStart);
-            const size_t cntPages = static_cast<Derived *>(this)->neededMemoryPages();
-            paging::mapPages(virtualAddressStart, this->memBase, cntPages);
+
+            paging::mapPages(virtualAddressStart, this->memBase, cntAllocatorPages);
 
             Logger::instance().println("[P_ALLOCATOR] Allocator mapped successfully");
 
-            this->memBase += cntPages * PAGE_SIZE;
-            this->memSize -= cntPages * PAGE_SIZE;
+            this->memBase += cntAllocatorPages * PAGE_SIZE;
+            this->memSize -= cntAllocatorPages * PAGE_SIZE;
         }
     };
 }

@@ -68,8 +68,8 @@ namespace physical_allocator {
         /*!
          * @return The number of pages of memory that should be mapped for the allocator
          */
-        constexpr size_t neededMemoryPages() {
-            auto cntPages = this->memSize / PAGE_SIZE;
+        [[nodiscard]] constexpr static size_t neededMemoryPages(size_t memSize) {
+            auto cntPages = memSize / PAGE_SIZE;
             /// We need one byte for each page, so just the number of pages that fit those bytes
             return toPages(cntPages);
         }
