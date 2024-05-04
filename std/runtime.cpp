@@ -12,7 +12,7 @@
 
 extern "C" {
 // The __cxa_guard_acquire function should return 1 if the initialization has not yet been completed, and 0 otherwise.
-// In a multi-threaded environment, this function is also responsible for blocking other threads until the initialization is complete.
+// In a multithreaded environment, this function is also responsible for blocking other threads until the initialization is complete.
 int __cxa_guard_acquire(__guard *g) {
     return !*(char *) (g);
 }
@@ -27,5 +27,11 @@ void __cxa_guard_release(__guard *g) {
 // It marks the initialization as not completed and releases any blocked threads.
 void __cxa_guard_abort(__guard *g) {
     *(char *) g = 0;
+}
+
+void *__dso_handle = nullptr;
+
+int __cxa_atexit(void (*destructor)(void *), void *arg, void *dso) {
+    return 0;
 }
 }
