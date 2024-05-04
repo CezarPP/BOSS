@@ -8,6 +8,7 @@
 #pragma once
 
 #include "compare.h"
+#include "utility.h"
 
 namespace std {
     // Version (1): Using the default less-than comparison
@@ -85,5 +86,26 @@ namespace std {
         for (; first != last; ++first) {
             *first = value;
         }
+    }
+
+    // find (1)
+    template<class InputIt, class T>
+    constexpr InputIt find(InputIt first, InputIt last, const T &value) {
+        for (; first != last; ++first)
+            if (*first == value)
+                return first;
+
+        return last;
+    }
+
+    // remove (1)
+    template<class ForwardIt, class T>
+    ForwardIt remove(ForwardIt first, ForwardIt last, const T &value) {
+        first = std::find(first, last, value);
+        if (first != last)
+            for (ForwardIt i = first; ++i != last;)
+                if (*i != value)
+                    *first++ = std::move(*i);
+        return first;
     }
 }
