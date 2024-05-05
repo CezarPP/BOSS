@@ -68,12 +68,3 @@ void KeyboardDriver::handleInterrupt_() {
 void KeyboardDriver::handleInterrupt() {
     KeyboardDriver::instance().handleInterrupt_();
 }
-
-void KeyboardEventHandler::onKeyDown(char c) {
-    Printer::instance().printf("%c", c);
-    // Logger::instance().println("Key %c down\n", c);
-}
-
-void KeyboardEventHandler::onKeyUp(char c) {
-    // Logger::instance().println("Key %c up\n", c);
-}
