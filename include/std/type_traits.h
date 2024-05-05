@@ -156,4 +156,45 @@ namespace std {
 
     template<typename T>
     inline constexpr bool is_move_assignable_v = is_move_assignable<T>::value;
+
+    /* conditional */
+    template<bool B, class T, class F>
+    struct conditional {
+        using type = T;
+    };
+
+    template<class T, class F>
+    struct conditional<false, T, F> {
+        using type = F;
+    };
+
+    template<bool B, class T, class F>
+    using conditional_t = typename conditional<B, T, F>::type;
+
+
+    /* is_destructible */
+    template<typename T, typename = void>
+    struct is_destructible : std::false_type {
+    };
+
+    template<typename T>
+    struct is_destructible<T, std::void_t<decltype(std::declval<T &>().~T())>> : std::true_type {
+    };
+
+    template<typename T>
+    struct is_trivially_destructible : std::bool_constant<__has_trivial_destructor(T)> {
+    };
+
+    template<typename T>
+    struct is_nothrow_destructible : std::bool_constant<noexcept(std::declval<T &>().~T())> {
+    };
+
+    template<class T>
+    inline constexpr bool is_destructible_v = is_destructible<T>::value;
+
+    template<class T>
+    inline constexpr bool is_trivially_destructible_v = is_trivially_destructible<T>::value;
+
+    template<class T>
+    inline constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<T>::value;
 }
