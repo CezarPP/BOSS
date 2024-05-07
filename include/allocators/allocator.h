@@ -39,9 +39,9 @@ namespace physical_allocator {
             return p;
         }
 
-        void deallocate(T *p, size_type n) noexcept {
+        void deallocate(T *, size_type n) noexcept {
             // Deallocating 0 bytes is alright
-            if(n != 0)
+            if (n != 0)
                 kPanic("This memory should not be deallocated");
         }
     };
@@ -50,6 +50,14 @@ namespace physical_allocator {
     constexpr bool operator==(const physicalStdAllocator<T1> &lhs, const physicalStdAllocator<T2> &rhs) noexcept {
         // All instances of allocator are interchangeable, hence always equal
         return true;
+    }
+
+    /*!
+     * @param mem The number of bytes to be converted to pages
+     * @return The amount of pages that could fit mem bytes
+     */
+    constexpr static size_t toPages(size_t mem) {
+        return mem / PAGE_SIZE + ((mem % PAGE_SIZE == 0) ? 0 : 1);
     }
 
     template<typename Derived>
@@ -71,22 +79,13 @@ namespace physical_allocator {
         /// The number of pages of memory the allocator asked for (for its internal representation)
         size_t cntAllocatorPages;
 
-
-        /*!
-         * @param mem The number of bytes to be converted to pages
-         * @return The amount of pages that could fit mem bytes
-         */
-        constexpr static size_t toPages(size_t mem) {
-            return mem / PAGE_SIZE + ((mem % PAGE_SIZE == 0) ? 0 : 1);
-
-        }
-
         /*!
          * Allocates cntPages pages, consecutive in physical memory
          * @param cntPages The number of pages to allocate
          * @return The physical address of the first page
          */
         size_t allocate(size_t cntPages) {
+            kAssert(cntPages != 0, "Can't allocate 0 pages");
             return static_cast<Derived *>(this)->allocateImplementation(cntPages);
         }
 
