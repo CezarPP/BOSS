@@ -7,11 +7,14 @@
 
 #pragma once
 
-#include "memory.h"
+#include "new.h"
 #include "iterator.h"
 
 namespace std {
-    template<class T, class Allocator = std::allocator<T>>
+    /* Commenting out std::allocator is a quick fix for a circular dependency where
+     * new needs kalloc which needs buddy_allocator, which needs vector with std::allocator which uses new
+     */
+    template<class T, class Allocator/* = std::allocator<T>*/>
     class vector {
     public:
         using size_type = size_t;
