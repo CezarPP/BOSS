@@ -78,11 +78,11 @@ namespace physical_allocator {
         }
 
         [[nodiscard]] static constexpr size_t smallestPowerOf2GE(size_t x) {
-            kAssert(x != 0, "x should not be zero here");
-
             if ((x & (x - 1)) == 0) {
                 // x is a power of 2
-                return x;
+                for (int i = 63; i >= 0; i--)
+                    if (x & (1ULL << i))
+                        return i;
             }
 
             // x is not a power of 2, get the next largest power
@@ -177,7 +177,7 @@ namespace physical_allocator {
                 size_t node = freeLists_[order].back();
                 freeLists_[order].pop_back();
                 tree_[node] = true;
-                Logger::instance().println("Returning node %X", node);
+                Logger::instance().println("Returning node %X with order %X", node, order);
                 return nodeToPhysicalAddress(node, order);
             } else {
                 /// Break some higher order pair
@@ -210,7 +210,7 @@ namespace physical_allocator {
                 }
                 kAssert(higherOrder == order, "We should have reached the right level");
                 /// Mark the last node as busy and return it
-                Logger::instance().println("Allocated node is %X", node);
+                Logger::instance().println("Allocated node is %X with order %X", node, order);
                 tree_[node] = true;
 
                 // Compute physical address from node index
