@@ -108,4 +108,28 @@ namespace std {
                     *first++ = std::move(*i);
         return first;
     }
+
+    // copy (1)
+    template<typename InputIt, typename OutputIt>
+    constexpr OutputIt copy(InputIt first, InputIt last, OutputIt destination) {
+        while (first != last) {
+            *destination = *first;
+            ++destination;
+            ++first;
+        }
+        return destination;
+    }
+
+
+    // copy_n (1)
+    template<typename InputIt, typename Size, typename OutputIt>
+    constexpr OutputIt copy_n(InputIt first, Size count, OutputIt result) {
+        while (count > 0) {
+            *result = *first;
+            ++result;
+            ++first;
+            --count;
+        }
+        return result;
+    }
 }
