@@ -139,6 +139,10 @@ namespace std {
             data_[size_].~T();
         }
 
+        constexpr const T &operator[](size_type pos) const {
+            return data_[pos];
+        }
+
         T &operator[](size_type index) {
             return data_[index];
         }
@@ -262,6 +266,16 @@ namespace std {
             size_ -= n;
         }
 
+        void destruct_all() {
+            for (size_t i = 0; i < size_; ++i) {
+                data_[i].~T();
+            }
+        }
+
+        void clear() {
+            destruct_all();
+            size_ = 0;
+        }
     };
 
 
