@@ -27,7 +27,7 @@ namespace kalloc {
         size_t cntPages; /// The number of pages of the region, 0 if free
     };
 
-    std::vector<MmapedRegion, virtual_allocator::virtualStdAllocator<MmapedRegion>>
+    std::vector_early<MmapedRegion, virtual_allocator::virtualStdAllocator<MmapedRegion>>
             mmapedRegions{virtual_allocator::virtualStdAllocator<MmapedRegion>()};
     // MmapedRegion mmapedRegions[MAX_MMAPED_REGIONS];
 

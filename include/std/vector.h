@@ -1,20 +1,16 @@
 /*
  * vector.h
  *
- *  Created on: 5/2/24.
+ *  Created on: 5/20/24.
  *      Author: Cezar PP
  */
 
 #pragma once
 
-#include "new.h"
-#include "iterator.h"
+#include "memory.h"
 
 namespace std {
-    /* Commenting out std::allocator is a quick fix for a circular dependency where
-     * new needs kalloc which needs buddy_allocator, which needs vector with std::allocator which uses new
-     */
-    template<class T, class Allocator/* = std::allocator<T>*/>
+    template<class T, class Allocator = std::allocator<T>>
     class vector {
     public:
         using size_type = size_t;
@@ -287,5 +283,3 @@ namespace std {
         return r;
     }
 }
-
-

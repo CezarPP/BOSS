@@ -19,7 +19,7 @@
 
 #include "allocator.h"
 #include "std/bitset.h"
-#include "std/vector.h"
+#include "std/vector_early.h"
 #include "std/array.h"
 
 namespace physical_allocator {
@@ -53,13 +53,13 @@ namespace physical_allocator {
          * The tree that will keep the buddies, represented as an array
          * A node in the tree is set to true if either it is busy or one of its children is busy
          */
-        std::vector<bool, physicalStdAllocator<bool>> tree_;
+        std::vector_early<bool, physicalStdAllocator<bool>> tree_;
 
         /// The number of bytes that the allocator for freeLists_ will get
         const size_t freeListsSize_;
         /// A free list for each level of the tree, from 0 to maxOrder_
-        std::vector<std::vector<size_t, physicalStdAllocator<size_t>>,
-                physicalStdAllocator<std::vector<size_t, physicalStdAllocator<size_t>>>> freeLists_;
+        std::vector_early<std::vector_early<size_t, physicalStdAllocator<size_t>>,
+                physicalStdAllocator<std::vector_early<size_t, physicalStdAllocator<size_t>>>> freeLists_;
 
         [[nodiscard]] constexpr size_t orderToLayer(size_t order) const {
             return maxOrder_ - order;
@@ -118,8 +118,8 @@ namespace physical_allocator {
                   treeSize_{cntNodes_},
                   tree_{physicalStdAllocator(static_cast<bool *>(allocatorMemory) + PAGE_SIZE, treeSize_)},
                   freeListsSize_{cntNodes_ * FREE_LIST_NODE_SIZE},
-                  freeLists_{physicalStdAllocator<std::vector<size_t, physicalStdAllocator<size_t>>>(
-                          (std::vector<size_t, physicalStdAllocator<size_t>> *) allocatorMemory,
+                  freeLists_{physicalStdAllocator<std::vector_early<size_t, physicalStdAllocator<size_t>>>(
+                          (std::vector_early<size_t, physicalStdAllocator<size_t>> *) allocatorMemory,
                           freeListsSize_)} {
             Logger::instance().println("[P_ALLOCATOR] Initializing buddy allocator...");
             Logger::instance().println("[P_ALLOCATOR] maxOrder_ = %X, treeSize_ = %X", maxOrder_, treeSize_);
@@ -142,7 +142,7 @@ namespace physical_allocator {
                         "[P_ALLOCATOR] Initializing the free lists %d, levelMemSize = %X, pagesPerLevel = %X",
                         i, levelMemSize, pagesPerLevel);
 
-                freeLists_.push_back(std::move(std::vector<size_t, physicalStdAllocator<size_t>>(
+                freeLists_.push_back(std::move(std::vector_early<size_t, physicalStdAllocator<size_t>>(
                         physicalStdAllocator<size_t>(
                                 reinterpret_cast<size_t *>(static_cast<uint8_t *>(freeListMemory) + currentOffset),
                                 levelMemSize))));
