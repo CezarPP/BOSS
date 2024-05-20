@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "new_custom.h"
+
 namespace std {
     // Normally defined in <memory>, but we can't include it there since our new and delete operators are custom
     template<typename T>

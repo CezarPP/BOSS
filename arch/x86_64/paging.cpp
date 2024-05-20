@@ -6,8 +6,6 @@
  */
 
 #include "../../include/arch/x86_64/paging.h"
-#include "../../include/arch/x86_64/logging.h"
-#include "arch/x86_64/exceptions.h"
 
 inline __attribute__((always_inline)) void paging::flushTlb(size_t page) {
     // asm volatile("invlpg [%0]"::"r" (page) : "memory");

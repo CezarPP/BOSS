@@ -9,6 +9,7 @@
 
 #include "util/types.h"
 #include "std/extra_std.h"
+#include "util/literals.h"
 
 // TODO use this
 union PageEntry {

@@ -18,8 +18,8 @@
 #include "util/literals.h"
 #include "std/algorithm.h"
 #include "phys_mm.h"
-#include "std/utility.h"
-#include "phys_mm.h"
+#include "logging.h"
+#include "exceptions.h"
 
 namespace paging {
     /* Future work:
