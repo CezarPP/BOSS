@@ -5,10 +5,12 @@
  *      Author: Cezar PP
  */
 
+#pragma once
 
-#include "utility.h"
+#include <stdint-gcc.h>
 
 namespace std {
+    using size_t = uint64_t;
     /* enable_if & disable_if */
     /**
      * If B is true, std::enable_if has a public member typedef type, equal to T; otherwise, there is no member typedef.
@@ -197,4 +199,118 @@ namespace std {
 
     template<class T>
     inline constexpr bool is_nothrow_destructible_v = is_nothrow_destructible<T>::value;
+
+    template<typename T>
+    struct identity_of {
+        using type = T;
+    };
+
+    template<typename T>
+    using identity_of_t = typename identity_of<T>::type;
+
+    template<typename T>
+    struct iterator_traits {
+        using value_type = typename T::value_type;
+        using reference = typename T::reference;
+        using pointer = typename T::pointer;
+        using difference_type = typename T::difference_type;
+    };
+
+    template<typename T>
+    struct iterator_traits<T *> {
+        using value_type = T;
+        using reference = T &;
+        using pointer = T *;
+        using difference_type = size_t;
+    };
+
+    template<typename T>
+    struct is_function {
+        static constexpr const bool value = false;
+    };
+
+    template<typename Ret, typename... Args>
+    struct is_function<Ret(Args...)> {
+        static constexpr const bool value = true;
+    };
+
+    template<typename Ret, typename... Args>
+    struct is_function<Ret(Args......)> {
+        static constexpr const bool value = true;
+    };
+
+    template<typename T>
+    struct is_array {
+        static constexpr const bool value = false;
+    };
+
+    template<typename T>
+    struct is_array<T[]> {
+        static constexpr const bool value = true;
+    };
+
+    template<typename T, size_t N>
+    struct is_array<T[N]> {
+        static constexpr const bool value = true;
+    };
+
+    template<typename T>
+    struct remove_volatile {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_volatile<volatile T> {
+        using type = T;
+    };
+
+    template<typename T>
+    using remove_volatile_t = typename remove_volatile<T>::type;
+
+    template<typename T>
+    struct remove_const {
+        using type = T;
+    };
+
+    template<typename T>
+    struct remove_const<const T> {
+        using type = T;
+    };
+
+    template<typename T>
+    using remove_const_t = typename remove_const<T>::type;
+
+    template<typename T>
+    struct remove_cv {
+        using type = typename std::remove_volatile<typename std::remove_const<T>::type>::type;
+    };
+
+    template<typename T>
+    using remove_cv_t = typename remove_cv<T>::type;
+
+    template<typename>
+    struct is_void_impl : false_type {
+    };
+
+    template<>
+    struct is_void_impl<void> : true_type {
+    };
+
+    template<typename _Tp>
+    struct is_void : is_void_impl<remove_cv_t<_Tp>>::type {
+    };
+
+    template<typename From, typename To, bool = is_void<From>::value || is_function<To>::value || is_array<To>::value>
+    struct is_convertible_impl {
+        using type = typename is_void<To>::type;
+    };
+
+    template<typename From, typename To>
+    struct is_convertible_impl<From, To, false> {
+        using type = decltype(test<From, To>(0));
+    };
+
+    template<typename From, typename To>
+    struct is_convertible : is_convertible_impl<From, To>::type {
+    };
 }
