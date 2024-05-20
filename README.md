@@ -2,17 +2,14 @@
 
 ## Basic Object-Oriented Operating SSystem
 
-## Compiling the kernel
+BO<sup>3</sup>SS is an operating system written in _C++20_ planning to leverage Modern C++ concepts and Design Patterns.
 
-```bash
-make all
-```
+It's main focus is not raw performance, but rather understandability of the code for learning purposes.
 
-## Running the kernel
+## Compiling & running the kernel
 
-```bash
-qemu-system-x86_64 -cdrom dist/x86_64/kernel.iso
-```
+You can use one of the CMake targets which in term use _qemu_ to run the OS.
+I choose CMake because I wanted a smooth developer experience with Clion.
 
 ## Features
 
