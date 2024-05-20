@@ -9,6 +9,7 @@
 #pragma once
 
 #include "cstddef.h"
+#include "type_traits.h"
 
 namespace std {
     template<typename Iterator>
