@@ -307,6 +307,16 @@ namespace std {
 
     template<typename From, typename To>
     struct is_convertible_impl<From, To, false> {
+    private:
+        template<typename To1>
+        static void test_aux(To1);
+
+        template<typename From1, typename To1, typename = decltype(test_aux<To1>(std::declval<From1>()))>
+        static true_type test(int);
+
+        template<typename, typename>
+        static false_type test(...);
+    public:
         using type = decltype(test<From, To>(0));
     };
 
