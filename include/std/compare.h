@@ -10,44 +10,46 @@
 /// A type introduced as part of the standard library to represent the result of a three-way comparison, also known as the "spaceship operator" <=>.
 
 namespace std {
-    class strong_ordering {
-    public:
-        // Constants representing the order
+    struct strong_ordering {
+        // Underlying value representation
+        int value;
+
+        // Constants for the comparison results
         static const strong_ordering less;
         static const strong_ordering equal;
         static const strong_ordering greater;
 
-        // Compare function to simulate the spaceship operator
-        template<typename T>
-        static strong_ordering compare(const T &left, const T &right) {
-            if (left < right) return less;
-            if (left > right) return greater;
-            return equal;
+        // Constructor
+        constexpr strong_ordering(int v) : value(v) {}
+
+        // Comparison operators
+        friend constexpr bool operator==(strong_ordering a, strong_ordering b) {
+            return a.value == b.value;
         }
 
-        // Operators to allow natural use of this class in conditions
-        bool operator==(strong_ordering other) const { return value == other.value; }
+        friend constexpr bool operator!=(strong_ordering a, strong_ordering b) {
+            return a.value != b.value;
+        }
 
-        bool operator!=(strong_ordering other) const { return value != other.value; }
+        friend constexpr bool operator<(strong_ordering a, strong_ordering b) {
+            return a.value < b.value;
+        }
 
-        bool operator<(strong_ordering other) const { return value < other.value; }
+        friend constexpr bool operator<=(strong_ordering a, strong_ordering b) {
+            return a.value <= b.value;
+        }
 
-        bool operator<=(strong_ordering other) const { return value <= other.value; }
+        friend constexpr bool operator>(strong_ordering a, strong_ordering b) {
+            return a.value > b.value;
+        }
 
-        bool operator>(strong_ordering other) const { return value > other.value; }
-
-        bool operator>=(strong_ordering other) const { return value >= other.value; }
-
-    private:
-        int value; // Internal state where -1 is less, 0 is equal, 1 is greater
-
-        // Private constructor to control the creation of instances
-        constexpr strong_ordering(int val) : value(val) {}
+        friend constexpr bool operator>=(strong_ordering a, strong_ordering b) {
+            return a.value >= b.value;
+        }
     };
 
-    // Definitions of constants
-    // const strong_ordering strong_ordering::less(-1);
-    // const strong_ordering strong_ordering::equal(0);
-    // const strong_ordering strong_ordering::greater(1);
-
+    // Initialization of constants
+    constexpr strong_ordering strong_ordering::less{-1};
+    constexpr strong_ordering strong_ordering::equal{0};
+    constexpr strong_ordering strong_ordering::greater{1};
 }
