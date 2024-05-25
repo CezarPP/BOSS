@@ -38,9 +38,7 @@ namespace std {
         // Default constructor
         vector() : data_(nullptr), capacity_(0), size_(0) {}
 
-        explicit vector(size_type c) : data_(allocator_.allocate(c)), capacity_(c), size_(0) {}
-
-        explicit vector(const Allocator &alloc = Allocator()) : data_(nullptr), capacity_(0), size_(0),
+        explicit vector(const Allocator &alloc) : data_(nullptr), capacity_(0), size_(0),
                                                                 allocator_(alloc) {}
 
         explicit vector(size_t c, const Allocator &alloc = Allocator()) : capacity_(c), size_(0), allocator_(alloc) {
