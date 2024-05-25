@@ -34,7 +34,7 @@ namespace std {
             return static_cast<T *>(::operator new(n * sizeof(T)));
         }
 
-        void deallocate(T *p, size_type n) noexcept {
+        void deallocate(T *p, size_type) noexcept {
             // Deallocate memory pointed by p, which was allocated for n objects of type T
             ::operator delete(p);
         }
