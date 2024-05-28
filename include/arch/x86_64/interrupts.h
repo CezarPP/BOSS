@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stdint.h"
 #include "std/extra_std.h"
 #include "util/types.h"
 

@@ -32,7 +32,9 @@ namespace kalloc {
     // MmapedRegion mmapedRegions[MAX_MMAPED_REGIONS];
 
     void init() {
+        Logger::instance().println("[KALLOC] Initializing...");
         mmapedRegions.reserve(1000);
+        Logger::instance().println("[KALLOC] Finished initializing");
     }
 
     /*!
@@ -42,6 +44,7 @@ namespace kalloc {
      */
     void *allocMmaped(size_t size) {
         size_t cntPages = size / PAGE_SIZE + ((size % PAGE_SIZE == 0) ? 0 : 1);
+        kAssert(cntPages > 0, "[V_ALLOC] Mmap should allocate at least one page");
         void *ptr = virtual_allocator::VirtualAllocator::instance()->vAlloc(cntPages);
         for (auto &mmapedRegion: mmapedRegions)
             if (mmapedRegion.cntPages == 0) {
@@ -49,7 +52,7 @@ namespace kalloc {
 
                 // Statistics
                 mmapedMemory += cntPages;
-                maxMmapedMemory = std::max(maxMmapedMemory, mmap_threshold);
+                maxMmapedMemory = std::max(maxMmapedMemory, mmapedMemory);
 
                 return ptr;
             }
