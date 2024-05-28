@@ -34,7 +34,8 @@ namespace std {
                 new(new_data + i) T(std::move(data_[i]));  // Use placement new
                 data_[i].~T();  // Call destructor explicitly
             }
-            allocator_.deallocate(data_, capacity_);
+            if (capacity_ > 0)
+                allocator_.deallocate(data_, capacity_);
             data_ = new_data;
             capacity_ = new_capacity;
         }
@@ -48,13 +49,15 @@ namespace std {
         explicit vector_early(const Allocator &alloc = Allocator()) : data_(nullptr), capacity_(0), size_(0),
                                                                       allocator_(alloc) {}
 
-        explicit vector_early(size_t c, const Allocator &alloc = Allocator()) : capacity_(c), size_(0), allocator_(alloc) {
+        explicit vector_early(size_t c, const Allocator &alloc = Allocator()) : capacity_(c), size_(0),
+                                                                                allocator_(alloc) {
             data_ = allocator_.allocate(c);
         }
 
 
         // Copy constructor
-        vector_early(const vector_early &other) : capacity_(other.capacity_), size_(other.size_), allocator_(other.allocator_) {
+        vector_early(const vector_early &other) : capacity_(other.capacity_), size_(other.size_),
+                                                  allocator_(other.allocator_) {
             data_ = allocator_.allocate(capacity_);
             for (std::size_t i = 0; i < size_; ++i) {
                 new(data_ + i) T(other.data_[i]);  // Placement new
@@ -74,7 +77,8 @@ namespace std {
             for (std::size_t i = 0; i < size_; ++i) {
                 data_[i].~T();  // Explicit destructor call
             }
-            allocator_.deallocate(data_, capacity_);
+            if (capacity_ > 0)
+                allocator_.deallocate(data_, capacity_);
         }
 
         // Copy assignment operator
@@ -95,7 +99,8 @@ namespace std {
                 for (std::size_t i = 0; i < size_; ++i) {
                     data_[i].~T();  // Explicit destructor call
                 }
-                allocator_.deallocate(data_, capacity_);
+                if (capacity_ > 0)
+                    allocator_.deallocate(data_, capacity_);
 
                 data_ = other.data_;
                 capacity_ = other.capacity_;
