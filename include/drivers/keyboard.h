@@ -19,7 +19,7 @@ static constexpr uint16_t controlPortNr = 0x64;
 class KeyboardEventHandler {
 public:
     void onKeyDown(char c) {
-        Printer::instance().printf("%c", c);
+        Console::instance().addKeyboardInput(c);
     }
 };
 

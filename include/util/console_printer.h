@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <stdint.h>
 #include "print.h"
+#include "../std/circular_buffer.h"
 
 enum class PRINTER_COLORS : uint8_t {
     PRINT_COLOR_BLACK = 0,
@@ -35,39 +35,45 @@ struct Char {
     uint8_t color;
 };
 
-class Printer : public PrinterInterface<Printer> {
-    constexpr static size_t
-            NUM_COLS = 80;
-    constexpr static size_t
-            NUM_ROWS = 25;
-    Char *const buffer = (Char *) 0xb8000; // Video memory for the VGA text mode
+class Console : public PrinterInterface<Console> {
+    constexpr static size_t NUM_COLS = 80;
+    constexpr static size_t NUM_ROWS = 25;
+
+    Char *const vgaBuffer = (Char *) 0xb8000; // Video memory for the VGA text mode
+
     size_t col_ = 0;
     size_t row_ = 0;
+
     uint8_t color = static_cast<uint8_t>(PRINTER_COLORS::PRINT_COLOR_WHITE) |
                     (static_cast<uint8_t>(PRINTER_COLORS::PRINT_COLOR_BLACK) << 4);
 
+    circular_buffer<char, 128> charBuffer{};
+
     // Private constructor
-    Printer() = default;
+    Console() = default;
 
     void printNewline();
 
     void printBackspace();
 
 public:
-    Printer(const Printer &) = delete;
+    Console(const Console &) = delete;
 
-    Printer &operator=(const Printer &) = delete;
+    Console &operator=(const Console &) = delete;
 
     // Public method to access the singleton instance
-    static Printer &instance() {
-        static Printer instance;
+    static Console &instance() {
+        static Console instance;
         return instance;
     }
+
+    void addKeyboardInput(char c);
+
+    void executeCommand();
 
     void clear_row(size_t row);
 
     void print_clear();
-
 
     void printChar(char character);
 
