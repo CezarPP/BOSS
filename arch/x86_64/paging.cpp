@@ -185,6 +185,10 @@ void paging::unmap(VirtualAddress virt) {
     // The address must be page-aligned
     kAssert(virt.isPageAligned(), "[PAGING] Page is not page aligned");
 
+    Logger::instance().println("[PAGING] Unmapping pml4e %X, pdpte %X, pde %X, pte %X",
+                               virt.p4Index, virt.p3Index, virt.p2Index, virt.p1Index);
+
+
     auto pml4t = find_pml4t();
 
     // If not present, return
