@@ -1,21 +1,19 @@
 #include "arch/x86_64/interrupts.h"
 #include "drivers/keyboard.h"
-#include "arch/x86_64/logging.h"
+#include "drivers/timer.h"
 #include "util/console_printer.h"
 #include "multiboot/multiboot.h"
-#include "allocators/virtual_allocator.h"
-#include "std/initializer_list.h"
 #include "allocators/kalloc.h"
 
+
 void f() {
-    // Logger::instance().println("[MAIN] IN F, x=%X", reinterpret_cast<uint64_t>(&x));
-    // Printer::instance().println("[MAIN] in f");
+    Logger::instance().println("[MAIN] in f");
 }
 
 extern "C" void kernel_main(uint64_t multibootAndMagic) {
     // [PRINTER] Initialize printer
-    Printer::instance().print_clear();
-    Printer::instance().println("[KERNEL MAIN] Welcome to BOSS!\n");
+    Console::instance().print_clear();
+    Console::instance().println("[KERNEL MAIN] Welcome to BOSS!\n");
 
 
     // [LOGGER]
@@ -33,7 +31,7 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     // [DRIVERS]
     KeyboardDriver::activate();
     setInterruptHandler(0x21, KeyboardDriver::handleInterrupt);
-    setInterruptHandler(0x20, f);
+    setInterruptHandler(0x20, TimerDriver::handleInterrupt);
 
 
     // [INTERRUPTS] enable
