@@ -1,3 +1,5 @@
+#include "drivers//ata.h"
+
 #include "arch/x86_64/interrupts.h"
 #include "drivers/keyboard.h"
 #include "drivers/timer.h"
@@ -29,7 +31,7 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     setupInterrupts();
 
     // [DRIVERS]
-    KeyboardDriver::activate();
+    KeyboardDriver::instance().activate();
     setInterruptHandler(0x21, KeyboardDriver::handleInterrupt);
     setInterruptHandler(0x20, TimerDriver::handleInterrupt);
 

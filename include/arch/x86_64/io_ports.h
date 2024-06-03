@@ -8,37 +8,78 @@
 
 #include "util/types.h"
 
-// Forward declaration of the Port class template
-template<typename PortType, uint16_t port>
-class Port;
+struct Port {
+    uint16_t portNumber;
 
-// Specialization for Byte operations
-template<uint16_t port>
-class Port<Byte, port> {
-public:
-    static Byte read() {
-        Byte ret;
-        asm volatile("inb %1, %0" : "=a"(ret) : "dN"(port));
-        return ret;
+    constexpr explicit Port(uint16_t portNumber) : portNumber(portNumber) {}
+};
+
+
+struct Port8Bit : public Port {
+    constexpr explicit Port8Bit(uint16_t portNumber) : Port(portNumber) {}
+
+    uint8_t read() {
+        return read8(portNumber);
     }
 
-    static void write(Byte value) {
-        asm volatile("outb %1, %0" : : "dN"(port), "a"(value));
+    void write(uint8_t data) {
+        write8(portNumber, data);
+    }
+
+    static inline uint8_t read8(uint16_t _port) {
+        uint8_t result;
+        __asm__ volatile("inb %1, %0" : "=a" (result) : "Nd" (_port));
+        return result;
+    }
+
+    static inline void write8(uint16_t _port, uint8_t _data) {
+        __asm__ volatile("outb %0, %1" : : "a" (_data), "Nd" (_port));
     }
 };
 
-// Specialization for Word operations
-template<uint16_t port>
-class Port<uint16_t, port> {
-public:
-    static uint16_t read() {
-        uint16_t ret;
-        asm volatile("inw %1, %0" : "=a"(ret) : "dN"(port));
-        return ret;
+
+struct Port16Bit : public Port {
+    constexpr explicit Port16Bit(uint16_t portNumber) : Port(portNumber) {}
+
+    uint16_t read() {
+        return read16(portNumber);
     }
 
-    static void write(uint16_t value) {
-        asm volatile("outw %1, %0" : : "dN"(port), "a"(value));
+    void write(uint16_t data) {
+        write16(portNumber, data);
+    }
+
+    static inline uint16_t read16(uint16_t _port) {
+        uint16_t result;
+        __asm__ volatile("inw %1, %0" : "=a" (result) : "Nd" (_port));
+        return result;
+    }
+
+    static inline void write16(uint16_t _port, uint16_t _data) {
+        __asm__ volatile("outw %0, %1" : : "a" (_data), "Nd" (_port));
+    }
+};
+
+
+struct Port32Bit : public Port {
+    constexpr explicit Port32Bit(uint16_t portNumber) : Port(portNumber) {}
+
+    uint32_t read() {
+        return read32(portNumber);
+    }
+
+    void write(uint32_t data) {
+        write32(portNumber, data);
+    }
+
+    static inline uint32_t read32(uint16_t _port) {
+        uint32_t result;
+        __asm__ volatile("inl %1, %0" : "=a" (result) : "Nd" (_port));
+        return result;
+    }
+
+    static inline void write32(uint16_t _port, uint32_t _data) {
+        __asm__ volatile("outl %0, %1" : : "a"(_data), "Nd" (_port));
     }
 };
 

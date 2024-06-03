@@ -10,14 +10,14 @@
 
 
 void KeyboardDriver::activate() {
-    while (commandPort::read() & 0x1)
-        dataPort::read();
-    commandPort::write(0xae); // activate interrupts
-    commandPort::write(0x20); // command 0x20 = read controller command byte
-    uint8_t status = (dataPort::read() | 1) & ~0x10;
-    commandPort::write(0x60); // command 0x60 = set controller command byte
-    dataPort::write(status);
-    dataPort::write(0xf4);
+    while (commandPort.read() & 0x1)
+        dataPort.read();
+    commandPort.write(0xae); // activate interrupts
+    commandPort.write(0x20); // command 0x20 = read controller command byte
+    uint8_t status = (dataPort.read() | 1) & ~0x10;
+    commandPort.write(0x60); // command 0x60 = set controller command byte
+    dataPort.write(status);
+    dataPort.write(0xf4);
     Logger::instance().println("[DRIVERS] Keyboard driver initialized");
 }
 
@@ -27,7 +27,7 @@ bool ctrlPressed = false;
 
 void KeyboardDriver::handleInterrupt_() {
     // Logger::instance().println("Handling keyboard interrupt");
-    uint8_t key = dataPort::read();
+    uint8_t key = dataPort.read();
     bool released = key & 0x80; // Check if the key was released
     key &= 0x7F; // Mask out the release bit to get the scancode
 

@@ -7,39 +7,38 @@
 #include "../../include/arch/x86_64/logging.h"
 
 
-
 bool Logger::init() {
-    Port<Byte, PORT + 1>::write(0x00); // Disable all interrupts
-    Port<Byte, PORT + 3>::write(0x80); // Enable DLAB (set baud rate divisor)
+    Port8Bit::write8(PORT + 1, 0x00); // Disable all interrupts
+    Port8Bit::write8(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
 
-    Port<Byte, PORT + 0>::write(0x03); // Set divisor to 3 (lo byte) 38400 baud
-    Port<Byte, PORT + 1>::write(0x00); // (hi byte)
-    Port<Byte, PORT + 3>::write(0x03); // 8 bits, no parity, one stop bit
-    Port<Byte, PORT + 2>::write(0xC7); // Enable FIFO, clear them, with 14-byte threshold
-    Port<Byte, PORT + 4>::write(0x0B); // IRQs enabled, RTS/DSR set
-    Port<Byte, PORT + 4>::write(0x1E); // Set in loopback mode, test the serial chip
-    Port<Byte, PORT + 0>::write(0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
+    Port8Bit::write8(PORT + 0, 0x03); // Set divisor to 3 (lo byte) 38400 baud
+    Port8Bit::write8(PORT + 1, 0x00); // (hi byte)
+    Port8Bit::write8(PORT + 3, 0x03); // 8 bits, no parity, one stop bit
+    Port8Bit::write8(PORT + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
+    Port8Bit::write8(PORT + 4, 0x0B); // IRQs enabled, RTS/DSR set
+    Port8Bit::write8(PORT + 4, 0x1E); // Set in loopback mode, test the serial chip
+    Port8Bit::write8(PORT + 0, 0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
 
     // Check if serial is faulty (i.e: not same byte as sent)
-    if (Port<Byte, PORT>::read() != 0xAE) {
+    if (Port8Bit::read8(PORT) != 0xAE) {
         return true; // Serial is faulty
     }
 
     // If serial is not faulty, set it in normal operation mode
     // (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
-    Port<Byte, PORT + 4>::write(0x0F);
+    Port8Bit::write8(PORT + 4, 0x0F);
     return false; // Success
 }
 
 
 int Logger::isTransmitEmpty() {
-    return Port<Byte, PORT + 5>::read() & 0x20;
+    return Port8Bit::read8(PORT + 5) & 0x20;
 }
 
 void Logger::write(char a) {
     while (isTransmitEmpty() == 0);
 
-    Port<Byte, PORT>::write(a);
+    Port8Bit::write8(PORT, a);
 }
 
 void Logger::printChar(char c) {
@@ -79,4 +78,5 @@ void Logger::log_hex(uint64_t num) {
     printChar('\n');
 }*/
 
-template class PrinterInterface<Logger>;
+template
+class PrinterInterface<Logger>;

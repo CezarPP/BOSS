@@ -24,8 +24,8 @@ public:
 };
 
 class KeyboardDriver {
-    typedef Port<Byte, controlPortNr> commandPort;
-    typedef Port<Byte, dataPortNr> dataPort;
+    Port8Bit commandPort{controlPortNr};
+    Port8Bit dataPort{dataPortNr};
 
     KeyboardEventHandler handler{};
 
@@ -38,7 +38,7 @@ public:
 
     KeyboardDriver &operator=(const KeyboardDriver &) = delete;
 
-    static void activate();
+    void activate();
 
     // Public method to access the singleton instance
     static KeyboardDriver &instance() {

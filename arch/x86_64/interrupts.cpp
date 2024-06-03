@@ -122,31 +122,31 @@ static void remapIRQTable() {
      * In protected mode, IRQs 0 to 7 conflict with the CPU exceptions, which are reserved by Intel up until 0x1F.
      * Move the interrupt vectors to the beginning of the available range INT 0..0xF -> INT 0x20,...0x2F
      */
-    typedef Port<Byte, MASTER_PIC_COMMAND> masterCommandPort;
-    typedef Port<Byte, SLAVE_PIC_COMMAND> slaveCommandPort;
-    typedef Port<Byte, MASTER_PIC_DATA> masterData;
-    typedef Port<Byte, SLAVE_PIC_DATA> slaveData;
+    Port8Bit masterCommandPort{MASTER_PIC_COMMAND};
+    Port8Bit slaveCommandPort{SLAVE_PIC_COMMAND};
+    Port8Bit masterData{MASTER_PIC_DATA};
+    Port8Bit slaveData{SLAVE_PIC_DATA};
 
 
     // Starts the initialization sequence
-    masterCommandPort::write(ICW1_INIT | ICW1_ICW4);
-    slaveCommandPort::write(ICW1_INIT | ICW1_ICW4);
+    masterCommandPort.write(ICW1_INIT | ICW1_ICW4);
+    slaveCommandPort.write(ICW1_INIT | ICW1_ICW4);
 
     // Vector offsets
-    masterData::write(0x20);
-    slaveData::write(0x28);
+    masterData.write(0x20);
+    slaveData.write(0x28);
 
     // Tell Master PIC that there is a slave PIC at IRQ2 (0000 0100)
-    masterData::write(0x04);
+    masterData.write(0x04);
     // Tell Slave PIC its cascade identity
-    slaveData::write(0x02);
+    slaveData.write(0x02);
 
     // Have the PICs use 8086 mode (and not 8080 mode)
-    masterData::write(ICW4_8086);
-    slaveData::write(ICW4_8086);
+    masterData.write(ICW4_8086);
+    slaveData.write(ICW4_8086);
 
-    masterData::write(0x0);
-    slaveData::write(0x0);
+    masterData.write(0x0);
+    slaveData.write(0x0);
 }
 
 void idtSetGate(Byte num, Address base, uint16_t sel, Byte flags) {
@@ -274,10 +274,10 @@ void irqHandler(RegistersState *state) {
     // If this interrupt involved the slave.
     if (state->int_no >= 40) {
         // Send reset signal to slave.
-        Port<Byte, 0xA0>::write(0x20);
+        Port8Bit::write8(0xA0, 0x20);
     }
     // Send reset signal to master. (As well as slave, if necessary).
-    Port<Byte, 0x20>::write(0x20);
+    Port8Bit::write8(0x20, 0x20);
 
     if (interruptHandlers[state->int_no]) {
         if (isInterestingInterrupt(state->int_no))
