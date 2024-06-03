@@ -77,6 +77,7 @@ namespace virtual_allocator {
          * @return The virtual address of the first page
          */
         void *vAlloc(size_t pages) {
+            Logger::instance().println("[V_ALLOC] Allocating %X pages...", pages);
             size_t physicalAddress = physicalAllocator.allocate(pages);
             size_t virtualAddressStart = KERNEL_VIRTUAL_START + (physicalAddress - physicalAllocator.memBase);
             paging::mapPages(virtualAddressStart, physicalAddress, pages);
@@ -124,14 +125,14 @@ namespace virtual_allocator {
         ~virtualStdAllocator() = default;  // Destructor
 
         [[nodiscard]] T *allocate(size_type n) {
-            kAssert(n > 0, "Should allocate something");
+            kAssert(n > 0, "[V_ALLOC] This allocator should allocate something");
             auto pagesToAllocate = physical_allocator::toPages(n * sizeof(T));
             T *p = static_cast<T *>(virtual_allocator::VirtualAllocator::instance()->vAlloc(pagesToAllocate));
             return p;
         }
 
         void deallocate(T *p, size_type n) noexcept {
-            kAssert(n > 0, "Should deallocate something");
+            kAssert(n > 0, "[V_ALLOC] This allocator should deallocate something");
             auto pagesToDeallocate = physical_allocator::toPages(n * sizeof(T));
             virtual_allocator::VirtualAllocator::instance()->vFree(p, pagesToDeallocate);
         }
