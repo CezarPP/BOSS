@@ -7,11 +7,6 @@
 #include "multiboot/multiboot.h"
 #include "allocators/kalloc_tests.h"
 
-
-void f() {
-    Logger::instance().println("[MAIN] in f");
-}
-
 extern "C" void kernel_main(uint64_t multibootAndMagic) {
     // [PRINTER] Initialize printer
     Console::instance().print_clear();
@@ -54,18 +49,14 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     virtual_allocator::VirtualAllocator::init(memory.first, memory.second);
     Logger::instance().println("[MAIN] Physical and Virtual allocators have been initialized");
 
+    // [KALLOC]
     kalloc::init();
     // From now on we can call kAlloc(), kFree(), but also just new and delete
     kalloc::tests::runAllTests();
 
     // [ATA] initializing disk
-    Ata ata0m{0x1F0, true};
     setInterruptHandler(0x2E, ataInterruptHandler);
-    ata0m.identity();
-    uint8_t a[1024] = "sal boss";
-    ata0m.write28(1, a, 9);
-    ata0m.flush();
-    ata0m.read28(1, 9);
+    Ata ata0m{0x1F0, true};
     /* Ata ata0s{0x1F0, false};
      * Ata ata1m{0x170, true};
      * Ata ata1s{0x170, false};

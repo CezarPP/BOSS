@@ -57,6 +57,11 @@ struct Ata {
             devicePort(portBase + 6), commandPort(portBase + 7),
             controlPort(portBase + 0x206) {
         this->isMaster = isMaster;
+
+        uint8_t a[1024] = "sal boss";
+        write28(1, a, 9);
+        flush();
+        read28(1, 9);
     }
 
     // Check if there is a hard drive and of what type
@@ -133,7 +138,7 @@ struct Ata {
         }
 
 
-        Logger::instance().println("Reading ATA Drive: ");
+        Logger::instance().println("[ATA] Reading drive: ");
 
         uint8_t data[1024];
         for (int i = 0; i < count; i += 2) {
@@ -172,7 +177,7 @@ struct Ata {
         commandPort.write(0x30); // write command
 
 
-        Logger::instance().println("Writing to ATA Drive...");
+        Logger::instance().println("[ATA] Writing to ATA Drive...");
 
         for (int i = 0; i < count; i += 2) {
             uint16_t w_data = data[i];
@@ -189,7 +194,7 @@ struct Ata {
         // Always write a full sector
         for (int i = count + (count % 2); i < BYTES_PER_SECTOR; i += 2)
             dataPort.write(0x0000);
-        Logger::instance().println("Successfully written to ATA disk");
+        Logger::instance().println("[ATA] Successfully written to ATA disk");
     }
 
     // Flush the cache of the hard drive
