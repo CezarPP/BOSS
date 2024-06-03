@@ -5,7 +5,7 @@
 #include "drivers/timer.h"
 #include "util/console_printer.h"
 #include "multiboot/multiboot.h"
-#include "allocators/kalloc.h"
+#include "allocators/kalloc_tests.h"
 
 
 void f() {
@@ -56,6 +56,7 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
 
     kalloc::init();
     // From now on we can call kAlloc(), kFree(), but also just new and delete
+    kalloc::tests::runAllTests();
 
     // [ATA] initializing disk
     Ata ata0m{0x1F0, true};
