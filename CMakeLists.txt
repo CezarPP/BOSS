@@ -28,8 +28,11 @@ add_executable(boss ${CXX_SOURCES} ${CXX_SUB_SOURCES} ${CXX_ARCH_SRCS} ${ASM_ARC
 
 set(ISO_FILE ${CMAKE_CURRENT_BINARY_DIR}/boss.iso)
 
+set(HDD_IMAGE ${CMAKE_CURRENT_BINARY_DIR}/mydisk.img)
+
 add_custom_command(OUTPUT ${ISO_FILE}
         DEPENDS boss
+        COMMAND dd if=/dev/zero of=${HDD_IMAGE} bs=1M count=1024
         COMMAND cp -R ${CMAKE_CURRENT_SOURCE_DIR}/image ${CMAKE_CURRENT_BINARY_DIR}/image/
         COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/boss ${CMAKE_CURRENT_BINARY_DIR}/image/iso/boot/boss.bin
         COMMAND grub-mkrescue -o ${ISO_FILE} ${CMAKE_CURRENT_BINARY_DIR}/image/iso
@@ -54,7 +57,7 @@ add_custom_target(Run-STDIO-QEMU
 
 add_custom_target(LogQEMU
         # -d int -no-reboot
-        COMMAND qemu-system-${ARCH} -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE}
+        COMMAND qemu-system-${ARCH} -serial file:${CMAKE_CURRENT_SOURCE_DIR}/serial.log -cdrom ${ISO_FILE} -drive file=${HDD_IMAGE},format=raw,if=ide,index=0,media=disk
         COMMENT Log output from QEMU
 )
 

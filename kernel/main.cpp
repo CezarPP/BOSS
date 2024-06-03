@@ -1,4 +1,4 @@
-#include "drivers//ata.h"
+#include "drivers/ata.h"
 
 #include "arch/x86_64/interrupts.h"
 #include "drivers/keyboard.h"
@@ -56,6 +56,19 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
 
     kalloc::init();
     // From now on we can call kAlloc(), kFree(), but also just new and delete
+
+    // [ATA] initializing disk
+    Ata ata0m{0x1F0, true};
+    setInterruptHandler(0x2E, ataInterruptHandler);
+    ata0m.identity();
+    uint8_t a[1024] = "sal boss";
+    ata0m.write28(1, a, 9);
+    ata0m.flush();
+    ata0m.read28(1, 9);
+    /* Ata ata0s{0x1F0, false};
+     * Ata ata1m{0x170, true};
+     * Ata ata1s{0x170, false};
+     * third: 0x1E8, fourth: 0x168 */
 
 
     while (true) {
