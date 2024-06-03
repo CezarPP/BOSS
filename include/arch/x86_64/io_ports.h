@@ -8,9 +8,10 @@
 
 #include "util/types.h"
 
-struct Port {
+class Port {
+public:
     uint16_t portNumber;
-
+protected:
     constexpr explicit Port(uint16_t portNumber) : portNumber(portNumber) {}
 };
 
