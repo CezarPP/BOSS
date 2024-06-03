@@ -13,11 +13,13 @@
 namespace kalloc {
     /*!
      * The heap is organized in arenas, arenas are independent heaps
+     * For each arena we will use a linked list to allocate memory
      */
 
-
+    constexpr const size_t ARENA_SIZE_PAGES = 8;
+    constexpr const size_t ARENA_SIZE = ARENA_SIZE_PAGES * PAGE_SIZE;
     /// Any bigger than this and we will allocate entire pages
-    constexpr const size_t mmap_threshold = 0; // TODO PAGE_SIZE;
+    constexpr const size_t MMAP_THRESHOLD = PAGE_SIZE;
 
     /// Statistics for mmap
     size_t mmapedMemory = 0, maxMmapedMemory = 0;
@@ -30,12 +32,6 @@ namespace kalloc {
     std::vector_early<MmapedRegion, virtual_allocator::virtualStdAllocator<MmapedRegion>>
             mmapedRegions{virtual_allocator::virtualStdAllocator<MmapedRegion>()};
     // MmapedRegion mmapedRegions[MAX_MMAPED_REGIONS];
-
-    void init() {
-        Logger::instance().println("[KALLOC] Initializing...");
-        mmapedRegions.reserve(1000);
-        Logger::instance().println("[KALLOC] Finished initializing");
-    }
 
     /*!
      * Allocates consecutive virtual pages for big allocations
@@ -61,6 +57,90 @@ namespace kalloc {
         return nullptr; // unreachable
     }
 
+    struct MemoryChunk {
+        MemoryChunk *next, *prev;
+        bool allocated;
+        size_t size;
+    };
+
+    struct Arena {
+        MemoryChunk *first;
+        size_t totalSize;
+
+        Arena(void *start, size_t size) {
+            kAssert(size >= sizeof(MemoryChunk), "[KALLOC] Size should be bigger than a memory chunk!");
+            this->first = (MemoryChunk *) start;
+            this->totalSize = size;
+
+            this->first->allocated = false;
+            this->first->prev = nullptr;
+            this->first->next = nullptr;
+            this->first->size = size - sizeof(MemoryChunk);
+        }
+
+        [[nodiscard]] void *malloc(size_t size) const {
+            MemoryChunk *result = nullptr;
+
+            for (MemoryChunk *chunk = first; chunk != nullptr && result == nullptr; chunk = chunk->next)
+                if (chunk->size >= size && !chunk->allocated)
+                    result = chunk;
+
+            if (result == nullptr)
+                return nullptr;
+
+            if (result->size >= size + sizeof(MemoryChunk) + 1) {
+                auto *temp = (MemoryChunk *) ((size_t) result + sizeof(MemoryChunk) + size);
+
+                temp->allocated = false;
+                temp->size = result->size - size - sizeof(MemoryChunk);
+                temp->prev = result;
+                temp->next = result->next;
+                if (temp->next != nullptr)
+                    temp->next->prev = temp;
+
+                result->size = size;
+                result->next = temp;
+            }
+
+            result->allocated = true;
+            return (void *) (((size_t) result) + sizeof(MemoryChunk));
+        }
+
+        void free(void *ptr) {
+            auto *chunk = (MemoryChunk *) ((size_t) ptr - sizeof(MemoryChunk));
+
+            chunk->allocated = false;
+
+            if (chunk->prev != nullptr && !chunk->prev->allocated) {
+                chunk->prev->next = chunk->next;
+                chunk->prev->size += chunk->size + sizeof(MemoryChunk);
+                if (chunk->next != nullptr)
+                    chunk->next->prev = chunk->prev;
+
+                chunk = chunk->prev;
+            }
+
+            if (chunk->next != nullptr && !chunk->next->allocated) {
+                chunk->size += chunk->next->size + sizeof(MemoryChunk);
+                chunk->next = chunk->next->next;
+                if (chunk->next != nullptr)
+                    chunk->next->prev = chunk;
+            }
+
+        }
+    };
+
+    std::vector_early<Arena, virtual_allocator::virtualStdAllocator<Arena>>
+            arenas{virtual_allocator::virtualStdAllocator<Arena>()};
+
+
+    void init() {
+        Logger::instance().println("[KALLOC] Initializing...");
+        mmapedRegions.reserve(1024);
+        arenas.reserve(1024);
+        Logger::instance().println("[KALLOC] Finished initializing");
+    }
+
     /*!
      * A basic form of malloc that allocates memory for the kernel
      * If size if bigger than a certain threshold, we mmap
@@ -70,11 +150,22 @@ namespace kalloc {
      * @return A pointer to the allocated memory chunk
      */
     void *kAlloc(size_t size) {
-        if (size >= mmap_threshold) {
+        if (size >= MMAP_THRESHOLD) {
+            Logger::instance().println("[KALLOC] Allocating %X via mmap", size);
             return allocMmaped(size);
         }
-
-        return nullptr; // TODO
+        Logger::instance().println("[KALLOC] Allocating %X into arenas", size);
+        for (auto it: arenas) {
+            auto ptr = it.malloc(size);
+            if (ptr != nullptr)
+                return ptr;
+        }
+        Logger::instance().println("[KALLOC] Allocating new arena...");
+        void *arenaStart = virtual_allocator::VirtualAllocator::instance()->vAlloc(ARENA_SIZE_PAGES);
+        Logger::instance().println("[KALLOC] Allocated memory for arena!");
+        arenas.push_back({arenaStart, ARENA_SIZE});
+        Logger::instance().println("[KALLOC] Allocating into new arena...");
+        return arenas.back().malloc(size);
     }
 
 
@@ -91,6 +182,12 @@ namespace kalloc {
                 return;
             }
 
-        // TODO
+        for (auto it: arenas)
+            if (ptr >= it.first && ptr < it.first + it.totalSize) {
+                it.free(ptr);
+                return;
+            }
+
+        kPanic("[KALLOC] We should have freed the pointer by now!");
     }
 }
