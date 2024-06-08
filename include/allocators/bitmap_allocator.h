@@ -8,7 +8,6 @@
 #pragma once
 
 #include "allocator.h"
-#include "std/bitset.h"
 
 namespace physical_allocator {
     /*!
@@ -23,55 +22,26 @@ namespace physical_allocator {
         bool *isFree_;
         size_t cntPages_;
     public:
-        BitmapAllocator(size_t memBase, size_t memSize) : Allocator(memBase, memSize) {
-            kAssert(paging::pageAligned(this->memBase), "memBase is not page aligned");
-
-            this->cntPages_ = this->memSize / PAGE_SIZE;
-            this->isFree_ = (bool *) this->allocatorMemory;
-
-            std::fill(this->isFree_, this->isFree_ + this->cntPages_, false);
-        }
+        BitmapAllocator(size_t memBase, size_t memSize);
 
         /*!
          * Allocated cntPages pages, consecutive in physical memory
          * @param cntPages The number of cntPages to allocate
          * @return The physical address of the first page
          */
-        size_t allocateImplementation(size_t cntPages) {
-            for (size_t i = 0; i < cntPages_ - cntPages + 1; i++) {
-                if (std::all_of(isFree_ + i, isFree_ + i + cntPages, [](bool x) {
-                    return !x;
-                })) {
-                    std::fill(isFree_ + i, isFree_ + i + cntPages, true);
-
-                    return memBase + i * PAGE_SIZE;
-                }
-            }
-            kPanic("[P_ALLOC] Can't allocate enough memory");
-            return 0;
-        }
+        size_t allocateImplementation(size_t cntPages);
 
         /*!
          * Free cntPages, starting from base
          * @param base The address of the first page to free
          * @param cntPages The number of pages to free
          */
-        void freeImplementation(size_t base, size_t cntPages) {
-            kAssert(paging::pageAligned(base), "[P_ALLOC] Address to free is not page aligned");
-
-            kAssert(base >= this->memBase, "Address has to be bigger than memBase");
-            auto indexStart = (base - this->memBase) / PAGE_SIZE;
-            auto indexEnd = indexStart + cntPages;
-
-            kAssert(indexEnd <= cntPages_, "[P_ALLOC] Wrong index value");
-
-            std::fill(isFree_ + indexStart, isFree_ + indexEnd, false);
-        }
+        void freeImplementation(size_t base, size_t cntPages);
 
         /*!
          * @return The number of pages of memory that should be mapped for the allocator
          */
-        [[nodiscard]] constexpr static size_t neededMemoryPages(size_t memSize) {
+        [[nodiscard]] inline constexpr static size_t neededMemoryPages(size_t memSize) {
             auto cntPages = memSize / PAGE_SIZE;
             /// We need one byte for each page, so just the number of pages that fit those bytes
             return toPages(cntPages);
