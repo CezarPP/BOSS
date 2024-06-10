@@ -8,6 +8,7 @@
 #pragma once
 
 #include "memory.h"
+#include "new.h"
 
 namespace std {
     template<class T, class Allocator = std::allocator<T>>

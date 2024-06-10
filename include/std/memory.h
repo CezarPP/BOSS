@@ -8,9 +8,6 @@
 
 #pragma once
 
-#include "new_custom.h"
-
-
 namespace std {
     /*
     * The std::allocator class template is the default Allocator used by all standard library containers if no user-specified allocator is provided.
@@ -45,16 +42,4 @@ namespace std {
         // All instances of allocator are interchangeable, hence always equal
         return true;
     }
-
-    template<typename T>
-    constexpr T *addressof(T &arg) noexcept {
-        return reinterpret_cast<T *>(
-                &const_cast<char &>(
-                        reinterpret_cast<const volatile char &>(arg)
-                )
-        );
-    }
-
-    template<class T>
-    const T *addressof(const T &&) = delete;
 }
