@@ -10,6 +10,7 @@
 
 #include "util/types.h"
 #include "arch/x86_64/exceptions.h"
+#include "arch/x86_64/logging.h"
 
 /**
  * Implements Disk abstraction, used by file system to access and make changes to the disk.
@@ -73,6 +74,22 @@ public:
      */
     virtual void write(size_t blockIndex, const uint8_t *data) = 0;
 
+
+    void test() {
+        Logger::instance().println("[DISK DRIVER] Testing...");
+
+        for (uint32_t i = 0; i < cntBlocks_ / 100; i++) {
+            uint8_t a[512] = "sal boss";
+            this->write(i, a);
+            this->flush();
+            uint8_t b[512];
+            this->read(i, b);
+
+            kAssert(memcmp(a, b, 512) == 0, "[DISK DRIVER] Test failed!");
+        }
+
+        Logger::instance().println("[DISK DRIVER] Test succeeded!");
+    }
 
     /**
      * Flush the cache of the hard drive
