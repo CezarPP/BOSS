@@ -76,13 +76,20 @@ public:
 
 
     void test() {
-        Logger::instance().println("[DISK DRIVER] Testing...");
+        Logger::instance().println("[DISK DRIVER] Testing 100th of %X blocks...", cntBlocks_);
+
+        uint8_t a[512];
+        for (int i = 0; i < 512; i++)
+            a[i] = i;
 
         for (uint32_t i = 0; i < cntBlocks_ / 100; i++) {
-            uint8_t a[512] = "sal boss";
             this->write(i, a);
             this->flush();
-            uint8_t b[512];
+        }
+
+        uint8_t b[512];
+        for (uint32_t i = 0; i < cntBlocks_ / 100; i++) {
+            memset(b, 0, 512);
             this->read(i, b);
 
             kAssert(memcmp(a, b, 512) == 0, "[DISK DRIVER] Test failed!");
