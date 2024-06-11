@@ -52,3 +52,20 @@ inline uint64_t strlen(const char *a) {
     }
     return length;
 }
+
+char *strcpy(char *dest, const char *src) {
+    char *start = dest;
+
+    // Copy each character from source to destination
+    while (*src != '\0') {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+
+    // Don't forget to add null terminator
+    *dest = '\0';
+
+    // Return the starting address of the destination
+    return start;
+}
