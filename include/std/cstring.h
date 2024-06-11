@@ -53,7 +53,7 @@ inline uint64_t strlen(const char *a) {
     return length;
 }
 
-char *strcpy(char *dest, const char *src) {
+inline char *strcpy(char *dest, const char *src) {
     char *start = dest;
 
     // Copy each character from source to destination
