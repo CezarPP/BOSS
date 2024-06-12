@@ -30,7 +30,8 @@ namespace std {
                 new(new_data + i) T(std::move(data_[i]));  // Use placement new
                 data_[i].~T();  // Call destructor explicitly
             }
-            allocator_.deallocate(data_, capacity_);
+            if(capacity_ > 0)
+                allocator_.deallocate(data_, capacity_);
             data_ = new_data;
             capacity_ = new_capacity;
         }
@@ -68,7 +69,8 @@ namespace std {
             for (std::size_t i = 0; i < size_; ++i) {
                 data_[i].~T();  // Explicit destructor call
             }
-            allocator_.deallocate(data_, capacity_);
+            if(capacity_ > 0)
+                allocator_.deallocate(data_, capacity_);
         }
 
         // Copy assignment operator
@@ -89,7 +91,8 @@ namespace std {
                 for (std::size_t i = 0; i < size_; ++i) {
                     data_[i].~T();  // Explicit destructor call
                 }
-                allocator_.deallocate(data_, capacity_);
+                if(capacity_ > 0)
+                    allocator_.deallocate(data_, capacity_);
 
                 data_ = other.data_;
                 capacity_ = other.capacity_;

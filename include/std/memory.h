@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "arch/x86_64/exceptions.h"
+
 namespace std {
     /*
     * The std::allocator class template is the default Allocator used by all standard library containers if no user-specified allocator is provided.
@@ -31,8 +33,9 @@ namespace std {
             return static_cast<T *>(::operator new(n * sizeof(T)));
         }
 
-        void deallocate(T *p, size_type) noexcept {
+        void deallocate(T *p, size_type n) noexcept {
             // Deallocate memory pointed by p, which was allocated for n objects of type T
+            kAssert(n > 0, "[STD ALLOCATOR] The deallocated size should be > 0");
             ::operator delete(p);
         }
     };
