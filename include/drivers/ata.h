@@ -33,13 +33,46 @@
  */
 
 namespace ata {
-    static constexpr const uint16_t SECTOR_SIZE = 512;
+    // Base addresses for primary and secondary ATA
+    constexpr const unsigned int ATA_PRIMARY = 0x1F0;
+    constexpr const unsigned int ATA_SECONDARY = 0x170;
 
-    struct AtaDriver {
-        static void ataInterruptHandler() {
-            // do nothing as we are using PIO
-        }
-    };
+    // I/O Controllers ports
+    constexpr const unsigned int ATA_DATA = 0;
+    constexpr const unsigned int ATA_ERROR = 1;
+    constexpr const unsigned int ATA_NSECTOR = 2;
+    constexpr const unsigned int ATA_SECTOR = 3;
+    constexpr const unsigned int ATA_LCYL = 4;
+    constexpr const unsigned int ATA_HCYL = 5;
+    constexpr const unsigned int ATA_DRV_HEAD = 6;
+    constexpr const unsigned int ATA_STATUS = 7;
+    constexpr const unsigned int ATA_COMMAND = 7;
+    constexpr const unsigned int ATA_DEV_CTL = 0x206;
+
+    // Status bits
+    constexpr const unsigned int ATA_STATUS_BSY = 0x80;
+    constexpr const unsigned int ATA_STATUS_DRDY = 0x40;
+    constexpr const unsigned int ATA_STATUS_DRQ = 0x08;
+    constexpr const unsigned int ATA_STATUS_ERR = 0x01;
+    constexpr const unsigned int ATA_STATUS_DF = 0x20;
+
+    // Commands
+    constexpr const unsigned int ATA_IDENTIFY = 0xEC;
+    constexpr const unsigned int ATA_READ_BLOCK = 0x20;
+    constexpr const unsigned int ATA_WRITE_BLOCK = 0x30;
+
+    // Control bits
+    constexpr const unsigned int ATA_CTL_SRST = 0x04;
+    constexpr const unsigned int ATA_CTL_nIEN = 0x02;
+
+    // Master/Slave on devices
+    constexpr const unsigned int MASTER_BIT = 0;
+    constexpr const unsigned int SLAVE_BIT = 1;
+
+    constexpr const uint32_t CONTROLLER_TIMEOUT = 1'000'000'000;
+
+    static constexpr const uint32_t SECTOR_SIZE = 512;
+
 
     class Ata final : public Disk {
     private:
@@ -49,27 +82,141 @@ namespace ata {
         Port8Bit lbaLowPort;
         Port8Bit lbaMidPort;
         Port8Bit lbaHiPort;
-        Port8Bit devicePort; // master or slave
-        Port8Bit commandPort; // instruction - read, write
+        Port8Bit devicePort; ///> master or slave
+        Port8Bit commandPort; ///> instruction - read, write
         Port8Bit controlPort;
+
+        static volatile bool primary_invoked;
+
+        static void primary_controller_handler() {
+            Ata::primary_invoked = true;
+        }
 
     public:
         bool isMaster;
 
-        constexpr Ata(uint16_t portBase, bool isMaster) : Disk(),
-                                                          dataPort(portBase), errorPort(portBase + 1),
-                                                          sectorCountPort(portBase + 2), lbaLowPort(portBase + 3),
-                                                          lbaMidPort(portBase + 4), lbaHiPort(portBase + 5),
-                                                          devicePort(portBase + 6), commandPort(portBase + 7),
-                                                          controlPort(portBase + 0x206) {
+        Ata(uint16_t portBase, bool isMaster) : Disk(),
+                                                dataPort(portBase + ATA_DATA), errorPort(portBase + ATA_ERROR),
+                                                sectorCountPort(portBase + ATA_NSECTOR),
+                                                lbaLowPort(portBase + ATA_SECTOR),
+                                                lbaMidPort(portBase + ATA_LCYL), lbaHiPort(portBase + ATA_HCYL),
+                                                devicePort(portBase + ATA_DRV_HEAD),
+                                                commandPort(portBase + ATA_COMMAND),
+                                                controlPort(portBase + ATA_DEV_CTL) {
+            kAssert(isMaster, "[ATA] Only is supported at the moment!");
             this->isMaster = isMaster;
+            setInterruptHandler(0x2e, primary_controller_handler);
+        }
 
-            uint8_t a[SECTOR_SIZE] = "sal boss";
-            uint8_t b[SECTOR_SIZE];
-            write(1, a);
-            flush();
-            read(1, a);
-            Logger::instance().println("READ FROM ATA %s", b);
+        bool select_device() {
+            auto wait_mask = ATA_STATUS_BSY | ATA_STATUS_DRQ;
+
+            if (!wait_for_controller(wait_mask, 0, CONTROLLER_TIMEOUT))
+                return false;
+
+            // Indicate the selected device
+            devicePort.write(0xA0);
+
+            if (!wait_for_controller(wait_mask, 0, CONTROLLER_TIMEOUT))
+                return false;
+
+            return true;
+        }
+
+        static void ata_wait_irq_primary() {
+            while (!primary_invoked) {
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+            }
+
+            primary_invoked = false;
+        }
+
+        inline void ata_400ns_delay() {
+            // This makes sure the loop is not optimized away
+            volatile int x = 0;
+            for (uint8_t i = 0; i < 15; i++) {
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+                x += commandPort.read();
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+                asm volatile ("nop");
+            }
+        }
+
+        uint32_t wait_for_controller(uint8_t mask, uint8_t value, uint32_t timeout) {
+            uint8_t status;
+            do {
+                // Sleep at least 400ns before reading the status register
+                ata_400ns_delay();
+
+                // Final read of the controller status
+                status = commandPort.read();
+            } while ((status & mask) != value && --timeout);
+
+            return timeout;
+        }
+
+        enum class sector_operation {
+            READ,
+            WRITE,
+            CLEAR
+        };
+
+        void read_write_sector(uint64_t start, void *data, sector_operation operation) {
+            //Select the device
+            kAssert(select_device(), "[ATA] Could not select device!");
+
+            uint8_t sc = start & 0xFF;
+            uint8_t cl = (start >> 8) & 0xFF;
+            uint8_t ch = (start >> 16) & 0xFF;
+            uint8_t hd = (start >> 24) & 0x0F;
+
+            auto command = operation == sector_operation::READ ? ATA_READ_BLOCK : ATA_WRITE_BLOCK;
+
+            // Process the command
+            sectorCountPort.write(1);
+            lbaLowPort.write(sc);
+            lbaMidPort.write(cl);
+            lbaHiPort.write(ch);
+            devicePort.write((1 << 6) | hd);
+            commandPort.write(command);
+
+            /**- Wait at most 30 seconds for BSY flag to be cleared */
+            kAssert(wait_for_controller(ATA_STATUS_BSY, 0, CONTROLLER_TIMEOUT), "[ATA] Error wait");
+
+            // Verify if there are errors
+            kAssert(!(commandPort.read() & ATA_STATUS_ERR), "[ATA] Error status");
+
+            auto *buffer = reinterpret_cast<uint16_t *>(data);
+
+            if (operation == sector_operation::WRITE) {
+                for (int i = 0; i < 256; ++i)
+                    dataPort.write(*buffer++);
+            } else if (operation == sector_operation::CLEAR) {
+                for (int i = 0; i < 256; ++i)
+                    dataPort.write(0);
+            }
+
+            // Wait the IRQ to happen
+            ata_wait_irq_primary();
+
+            // The device can report an error after the IRQ
+            kAssert(!(commandPort.read() & ATA_STATUS_ERR), "[ATA] Error after IRQ");
+
+            if (operation == sector_operation::READ) {
+                // Read the disk sectors
+                for (int i = 0; i < 256; ++i) {
+                    *buffer++ = dataPort.read();
+                }
+            }
         }
 
         // Check if there is a hard drive and of what type
@@ -92,7 +239,7 @@ namespace ata {
             lbaLowPort.write(0);
             lbaMidPort.write(0);
             lbaHiPort.write(0);
-            commandPort.write(0xEC); // identity command
+            commandPort.write(ATA_IDENTIFY); // identity command
 
             status = commandPort.read();
             if (status == 0x00) {
@@ -126,62 +273,18 @@ namespace ata {
         }
 
         void read(size_t blockIndex, uint8_t *data) override {
-            kAssert(blockIndex <= 0x0FFFFFFF, "[ATA] SectorNumber too big!");
-
-            devicePort.write((isMaster ? 0xE0 : 0xF0) | ((blockIndex & 0x0F000000) >> 24));
-            errorPort.write(0);
-            sectorCountPort.write(1);
-            lbaLowPort.write(blockIndex & 0x000000FF);
-            lbaMidPort.write((blockIndex & 0x0000FF00) >> 8);
-            lbaLowPort.write((blockIndex & 0x00FF0000) >> 16);
-            commandPort.write(0x20); // read command
-
-            uint8_t status = commandPort.read();
-            while (((status & 0x80) == 0x80)
-                   && ((status & 0x01) != 0x01))
-                status = commandPort.read();
-
-            if (status & 0x01) {
-                Logger::instance().println("[ATA] Error reading...");
-                return;
-            }
-
-            Logger::instance().println("[ATA] Reading drive: ");
-
-            for (int i = 0; i < SECTOR_SIZE; i += 2) {
-                uint16_t w_data = dataPort.read();
-
-                data[i] = (char) (w_data & 0xFF);
-                data[i + 1] = (char) ((w_data >> 8) & 0xFF);
-            }
-
+            sanityCheck(blockIndex, data);
+            read_write_sector(blockIndex, data, sector_operation::READ);
             cntReads_++;
         }
 
-        void write(size_t blockIndex, const uint8_t *data) override {
-            kAssert(blockIndex <= 0x0FFFFFFF, "[ATA] SectorNumber too big!");
-
-            devicePort.write((isMaster ? 0xE0 : 0xF0) | ((blockIndex & 0x0F000000) >> 24));
-            errorPort.write(0); // clear previous error messages
-            sectorCountPort.write(1); // write a single sector
-            lbaLowPort.write(blockIndex & 0x000000FF); // split sector number into these 3 ports
-            lbaMidPort.write((blockIndex & 0x0000FF00) >> 8);
-            lbaLowPort.write((blockIndex & 0x00FF0000) >> 16);
-            commandPort.write(0x30); // write command
-
-            Logger::instance().println("[ATA] Writing to ATA Drive...");
-
-            for (int i = 0; i < SECTOR_SIZE; i += 2) {
-                uint16_t w_data = data[i];
-                w_data |= ((uint16_t) data[i + 1]) << 8;
-                dataPort.write(w_data);
-            }
-
+        void write(size_t blockIndex, uint8_t *data) override {
+            sanityCheck(blockIndex, data);
+            read_write_sector(blockIndex, data, sector_operation::WRITE);
             cntWrites_++;
-            Logger::instance().println("[ATA] Successfully written to ATA disk");
         }
 
-        void flush() override {
+/*        void flush()  {
             devicePort.write(isMaster ? 0xE0 : 0xF0);
             commandPort.write(0xE7); // flush command
 
@@ -197,6 +300,6 @@ namespace ata {
                 Logger::instance().println("[ATA] Error flushing cache...");
                 return;
             }
-        }
+        }*/
     };
 }
