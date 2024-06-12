@@ -29,7 +29,7 @@ namespace kalloc {
     constexpr const size_t MMAP_THRESHOLD = PAGE_SIZE;
 
     /// Statistics for mmap
-    size_t mmapedMemory = 0, maxMmapedMemory = 0;
+    size_t mmapedPointers = 0, mmapedMemory = 0, maxMmapedMemory = 0;
 
     std::vector_early<MmapedRegion, virtual_allocator::virtualStdAllocator<MmapedRegion>>
             mmapedRegions{virtual_allocator::virtualStdAllocator<MmapedRegion>()};
@@ -39,19 +39,28 @@ namespace kalloc {
 
     void *allocMmaped(size_t size) {
         size_t cntPages = size / PAGE_SIZE + ((size % PAGE_SIZE == 0) ? 0 : 1);
+        Logger::instance().println("[KALLOC] Allocating %X pages via mmap", cntPages);
+
         kAssert(cntPages > 0, "[V_ALLOC] Mmap should allocate at least one page");
         void *ptr = virtual_allocator::VirtualAllocator::instance()->vAlloc(cntPages);
         for (auto &mmapedRegion: mmapedRegions)
-            if (mmapedRegion.cntPages == 0) {
+            if (mmapedRegion.isEmpty()) {
                 mmapedRegion = {ptr, cntPages};
 
                 // Statistics
+                mmapedPointers++;
                 mmapedMemory += cntPages;
                 maxMmapedMemory = std::max(maxMmapedMemory, mmapedMemory);
 
                 return ptr;
             }
-        kPanic("No free slot available");
+        mmapedRegions.push_back({ptr, cntPages});
+
+        mmapedPointers++;
+        mmapedMemory += cntPages;
+        maxMmapedMemory = std::max(maxMmapedMemory, mmapedMemory);
+
+        return ptr;
         // __builtin_unreachable();
         return nullptr; // unreachable
     }
@@ -122,17 +131,17 @@ namespace kalloc {
 
     void init() {
         Logger::instance().println("[KALLOC] Initializing...");
-        mmapedRegions.reserve(1024);
+        mmapedRegions.resize(4096);
+        std::fill(mmapedRegions.begin(), mmapedRegions.end(), MmapedRegion{});
         arenas.reserve(1024);
         Logger::instance().println("[KALLOC] Finished initializing");
     }
 
     void *kAlloc(size_t size) {
         if (size >= MMAP_THRESHOLD) {
-            Logger::instance().println("[KALLOC] Allocating %X via mmap", size);
             return allocMmaped(size);
         }
-        Logger::instance().println("[KALLOC] Allocating %X into arenas", size);
+        Logger::instance().println("[KALLOC] Allocating %X bytes into arenas", size);
         for (auto it: arenas) {
             auto ptr = it.malloc(size);
             if (ptr != nullptr)
@@ -150,9 +159,9 @@ namespace kalloc {
     void kFree(void *ptr) {
         /// If it is mmaped, release that memory and return
         for (auto &mmapedRegion: mmapedRegions)
-            if (mmapedRegion.cntPages > 0 && mmapedRegion.ptr == ptr) {
+            if (!mmapedRegion.isEmpty() && mmapedRegion.ptr == ptr) {
                 virtual_allocator::VirtualAllocator::instance()->vFree(ptr, mmapedRegion.cntPages);
-                mmapedRegion.cntPages = 0;
+                mmapedRegion = {nullptr, 0};
                 return;
             }
 

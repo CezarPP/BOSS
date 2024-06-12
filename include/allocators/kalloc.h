@@ -12,8 +12,12 @@
 
 namespace kalloc {
     struct MmapedRegion {
-        void *ptr; /// The virtual address of the mmaped region
-        size_t cntPages; /// The number of pages of the region, 0 if free
+        void *ptr = nullptr; /// The virtual address of the mmaped region
+        size_t cntPages = 0; /// The number of pages of the region, 0 if free
+
+        [[nodiscard]] bool isEmpty() const {
+            return ptr == nullptr && cntPages == 0;
+        }
     };
 
     /*!
