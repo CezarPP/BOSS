@@ -11,26 +11,28 @@
 #include "util/types.h"
 #include "arch/x86_64/exceptions.h"
 #include "arch/x86_64/logging.h"
+#include "std/cstring.h"
 
 /**
  * Implements Disk abstraction, used by file system to access and make changes to the disk.
  */
 class Disk {
 protected:
-    size_t cntBlocks_; /// Number of blocks in disk image
-    size_t totalSize_; /// The total size in bytes
+    size_t cntBlocks_; ///> Number of blocks in disk image
+    size_t totalSize_; ///> The total size in bytes
 
-    /// Statistics
-    size_t cntReads_;  /// Number of reads performed
-    size_t cntWrites_; /// Number of writes performed
-    size_t cntMounts_; /// Number of mounts
+    // Statistics
+    size_t cntReads_;  ///> Number of reads performed
+    size_t cntWrites_; ///> Number of writes performed
+    size_t cntMounts_; ///> Number of mounts
 
     /**
      * Check if the block is within valid range
      * @param blockIndex index of the block into the free block bitmap
      * @param data data buffer
      */
-    inline void sanityCheck(size_t blockIndex, const char *data) const {
+    inline void sanityCheck(size_t blockIndex, const uint8_t *data) const {
+        kAssert(blockIndex <= 0x0FFFFFFF, "[ATA] SectorNumber too big!");
         kAssert(blockIndex < cntBlocks_, "BlockIndex is too big!");
         kAssert(data != nullptr, "Data should not be a null pointer!");
     }
@@ -72,34 +74,46 @@ public:
      * @param blockIndex block to write into
      * @param data data buffer to read from
      */
-    virtual void write(size_t blockIndex, const uint8_t *data) = 0;
-
+    virtual void write(size_t blockIndex, uint8_t *data) = 0;
 
     void test() {
-        Logger::instance().println("[DISK DRIVER] Testing 100th of %X blocks...", cntBlocks_);
+        uint32_t maxTests = cntBlocks_ / 100;
+        Logger::instance().println("[DISK DRIVER] Running %d tests for %X blocks...", maxTests, cntBlocks_);
 
-        uint8_t a[512];
-        for (int i = 0; i < 512; i++)
-            a[i] = i;
-
-        for (uint32_t i = 0; i < cntBlocks_ / 100; i++) {
-            this->write(i, a);
-            this->flush();
+        uint8_t a[512], a2[512], b[512];
+        for (uint32_t i = 0; i < 512; i++) {
+            // a[i] = i % 256;
+            a[i] = (i + 1) % 2;
+            a2[i] = i % 2;
         }
 
-        uint8_t b[512];
-        for (uint32_t i = 0; i < cntBlocks_ / 100; i++) {
+        this->write(0, a);
+        this->read(0, b);
+
+        kAssert(memcmp(a, b, 512) == 0, "[DISK_DRIVER] Failed 1st test");
+
+        for (uint32_t i = 0; i < maxTests; i++) {
+            this->write(i, a);
+        }
+
+        for (uint32_t i = 0; i < maxTests; i++) {
+            memset(b, 0, 512);
+            this->read(i, b);
+            kAssert(memcmp(a, b, 512) == 0, "[DISK DRIVER] Test failed 1!");
+
+            this->write(i, a2);
+            // this->flush();
             memset(b, 0, 512);
             this->read(i, b);
 
-            kAssert(memcmp(a, b, 512) == 0, "[DISK DRIVER] Test failed!");
+            kAssert(memcmp(a2, b, 512) == 0, "[DISK DRIVER] Test failed 2!");
+
         }
 
         Logger::instance().println("[DISK DRIVER] Test succeeded!");
     }
-
     /**
      * Flush the cache of the hard drive
      */
-    virtual void flush() = 0;
+    // virtual void flush() = 0;
 };
