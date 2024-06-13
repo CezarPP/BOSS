@@ -30,9 +30,12 @@ set(ISO_FILE ${CMAKE_CURRENT_BINARY_DIR}/boss.iso)
 
 set(HDD_IMAGE ${CMAKE_CURRENT_BINARY_DIR}/mydisk.img)
 
+set(HDD_IMAGE_SIZE_MB 64)
+
 add_custom_command(OUTPUT ${ISO_FILE}
         DEPENDS boss
-        COMMAND dd if=/dev/zero of=${HDD_IMAGE} bs=1M count=1024
+        COMMAND touch ${HDD_IMAGE}
+        COMMAND dd if=/dev/zero of=${HDD_IMAGE} bs=1M count=${HDD_IMAGE_SIZE_MB}
         COMMAND cp -R ${CMAKE_CURRENT_SOURCE_DIR}/image ${CMAKE_CURRENT_BINARY_DIR}/image/
         COMMAND cp ${CMAKE_CURRENT_BINARY_DIR}/boss ${CMAKE_CURRENT_BINARY_DIR}/image/iso/boot/boss.bin
         COMMAND grub-mkrescue -o ${ISO_FILE} ${CMAKE_CURRENT_BINARY_DIR}/image/iso
