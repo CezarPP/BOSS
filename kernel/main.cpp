@@ -1,14 +1,17 @@
-#include "drivers/ata.h"
+#include "fs/simple_fs.h"
+// #include "fs/vfs.h"
 
 #include "arch/x86_64/interrupts.h"
 #include "drivers/keyboard.h"
 #include "drivers/timer.h"
 #include "util/console_printer.h"
 #include "multiboot/multiboot.h"
+#include "allocators/virtual_allocator.h"
 #include "allocators/kalloc_tests.h"
+#include "allocators/kalloc.h"
 
 extern "C" void kernel_main(uint64_t multibootAndMagic) {
-    // [PRINTER] Initialize printer
+    // [CONSOLE] Initialize console
     Console::instance().print_clear();
     Console::instance().println("[KERNEL MAIN] Welcome to BOSS!\n");
 
@@ -44,23 +47,30 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     paging::init();
 
     // [PHYSICAL ALLOCATOR] [VIRTUAL ALLOCATOR]
-    // The virtual allocator also initializes the physical allocator
+    // The virtual allocator also initializes and tests the physical allocator
     Logger::instance().println("[MAIN] Starting to initialize the Physical and Virtual allocators");
     virtual_allocator::VirtualAllocator::init(memory.first, memory.second);
     Logger::instance().println("[MAIN] Physical and Virtual allocators have been initialized");
 
     // [KALLOC]
     kalloc::init();
-    // From now on we can call kAlloc(), kFree(), but also just new and delete
     kalloc::tests::runAllTests();
+    // From now on we can call kAlloc(), kFree(), but also just new and delete
 
     // [ATA] initializing disk
-    setInterruptHandler(0x2E, ataInterruptHandler);
-    Ata ata0m{0x1F0, true};
-    /* Ata ata0s{0x1F0, false};
-     * Ata ata1m{0x170, true};
-     * Ata ata1s{0x170, false};
-     * third: 0x1E8, fourth: 0x168 */
+    // setInterruptHandler(0x2E, ata::AtaDriver::ataInterruptHandler);
+    ata::Ata ata0m{ata::ATA_PRIMARY, true};
+    ata0m.identity();
+    ata0m.test();
+    /* Ata ata0s{ata::ATA_PRIMARY, false};
+     * Ata ata1m{ata::ATA_SECONDARY, true};
+     * Ata ata1s{ata::ATA_SECONDARY, false}; */
+
+    // [SimpleFS]
+    simple_fs::SimpleFS simpleFs{&ata0m};
+    simpleFs.format();
+    simpleFs.debug();
+    simpleFs.mount();
 
 
     while (true) {
