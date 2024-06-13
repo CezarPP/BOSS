@@ -20,4 +20,6 @@ I choose CMake because I wanted a smooth developer experience with Clion.
 * [x] Paging & Physical & Virtual allocators
 * [x] malloc() and custom ::operator new
 * [ ] C++ STD library replica (in progress)
-* [ ] Virtual File System (VFS) & FAT (in progress)
+* [x] ATA Hard disk driver
+* [x] SimpleFS file system
+* [ ] Virtual File System (VFS) (in progress)
