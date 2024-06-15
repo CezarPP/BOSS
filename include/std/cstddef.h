@@ -12,9 +12,12 @@
 namespace std {
     // ptrdiff_t is used for differences between pointers
     using ptrdiff_t = long long; // On x86_64, it's typically a 64-bit signed integer
+    static_assert(sizeof(ptrdiff_t) == 8);
 
     // size_t is used for sizes of objects
     typedef uint64_t size_t;
+
+    typedef std::ptrdiff_t ssize_t;
 
     // max_align_t is a type whose alignment requirement is at least as strict as that of every scalar type
     struct max_align_t {
