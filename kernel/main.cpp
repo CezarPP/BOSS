@@ -58,7 +58,7 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     // From now on we can call kAlloc(), kFree(), but also just new and delete
 
     // [ATA] initializing disk
-    // setInterruptHandler(0x2E, ata::AtaDriver::ataInterruptHandler);
+    // Constructor also sets up interrupt handler
     ata::Ata ata0m{ata::ATA_PRIMARY, true};
     ata0m.identity();
     ata0m.test();
@@ -71,6 +71,7 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     simpleFs.format();
     simpleFs.debug();
     simpleFs.mount();
+    simpleFs.test();
 
 
     while (true) {
