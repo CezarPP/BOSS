@@ -7,7 +7,7 @@
 #include "fs/simple_fs.h"
 
 namespace simple_fs {
-    size_t SimpleFS::write_ret(size_t inumber, Inode *node, int ret) {
+    ssize_t SimpleFS::write_ret(size_t inumber, Inode *node, int ret) {
         checkFsMounted();
 
         /// Find index of inode in the inode table
@@ -23,7 +23,7 @@ namespace simple_fs {
         return (size_t) ret;
     }
 
-    void SimpleFS::read_buffer(int offset, int *read, int length, uint8_t *data, uint32_t blocknum) {
+    void SimpleFS::read_buffer(int offset, int *read, int length, const uint8_t *data, uint32_t blockNum) {
         checkFsMounted();
 
         Block block;
@@ -33,11 +33,11 @@ namespace simple_fs {
             block.data[i] = data[*read];
             *read = *read + 1;
         }
-        disk_->write(blocknum, block.data);
+        disk_->write(blockNum, block.data);
     }
 
 
-    size_t SimpleFS::write(size_t inumber, uint8_t *data, int length, size_t offset) {
+    ssize_t SimpleFS::write(size_t inumber, const uint8_t *data, int length, size_t offset) {
         checkFsMounted();
 
         Inode node{};

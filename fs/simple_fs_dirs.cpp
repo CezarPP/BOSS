@@ -72,7 +72,7 @@ namespace simple_fs {
 
     int SimpleFS::dir_lookup(Directory dir, const char name[]) {
         /// Search the curr_dir.Table for name
-        for (uint32_t offset = 0; offset < ENTRIES_PER_DIR; offset++)
+        for (int offset = 0; offset < ENTRIES_PER_DIR; offset++)
             if (dir.Table[offset].valid == 1 && strcmp(dir.Table[offset].Name, name) == 0)
                 return offset;
 
@@ -103,9 +103,9 @@ namespace simple_fs {
         for (auto temp: dir.Table) {
             if (temp.valid) {
                 if (temp.type == 1)
-                    Console::instance().println("%-10d | %-16s | %-5s", temp.inum, temp.Name, "file");
+                    Console::instance().println("%d | %s | %s", temp.inum, temp.Name, "file");
                 else
-                    Console::instance().println("%-10d | %-16s | %-5s", temp.inum, temp.Name, "dir");
+                    Console::instance().println("%d | %s | %s", temp.inum, temp.Name, "dir");
             }
         }
         return true;
@@ -241,9 +241,9 @@ namespace simple_fs {
         return parent;
     }
 
-    bool SimpleFS::rmdir(char name[NAME_SIZE]) {
+    bool SimpleFS::rmdir(const char name[NAME_SIZE]) {
         Directory temp = rmdir_helper(curr_dir, name);
-        if (temp.Valid == 0) {
+        if (temp.Valid) {
             curr_dir = temp;
             return true;
         }

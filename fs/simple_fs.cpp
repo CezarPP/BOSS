@@ -72,7 +72,7 @@ namespace simple_fs {
 
         Block superBlock{};
 
-        Logger::instance().println("Disk sectors is %X", disk_->size());
+        Logger::instance().println("[SIMPLE_FS] The disk has %X sectors.", disk_->size());
         superBlock.super = SuperBlock(disk_->size());
 
         disk_->write(0, superBlock.data);
@@ -239,7 +239,7 @@ namespace simple_fs {
         Logger::instance().println("[SIMPLE_FS] Finished mount!");
     }
 
-    size_t SimpleFS::create() {
+    ssize_t SimpleFS::create() {
         checkFsMounted();
 
         /// Read the superBlock
@@ -270,14 +270,15 @@ namespace simple_fs {
             }
         }
 
+        Logger::instance().println("[SIMPLE_FS] Failed to create inode!");
         return -1;
     }
 
     bool SimpleFS::load_inode(size_t inumber, Inode *node) {
         checkFsMounted();
 
-        if ((inumber > MetaData.Inodes) || (inumber < 1)) {
-            Logger::instance().println("[SIMPLE_FS] Invalid inode!");
+        if ((inumber > MetaData.Inodes)) { // || (inumber < 1)) {
+            Logger::instance().println("[SIMPLE_FS] Invalid inode! %X", inumber);
             return false;
         }
 
@@ -294,8 +295,10 @@ namespace simple_fs {
                 *node = block.inodes[j];
                 return true;
             }
+            Logger::instance().println("[SIMPLE_FS] Inode is invalid!");
         }
 
+        Logger::instance().println("[SIMPLE_FS] Inode counter is wrong or inode is invalid!");
         return false;
     }
 
@@ -345,7 +348,7 @@ namespace simple_fs {
         return false;
     }
 
-    size_t SimpleFS::stat(size_t inumber) {
+    ssize_t SimpleFS::stat(size_t inumber) {
         checkFsMounted();
 
         Inode node{};
@@ -357,19 +360,19 @@ namespace simple_fs {
         return -1;
     }
 
-    void SimpleFS::read_helper(uint32_t blocknum, int offset, int *length, uint8_t **data, uint8_t **ptr) {
+    void SimpleFS::read_helper(uint32_t blockNum, int offset, int *length, uint8_t **data, uint8_t **ptr) {
         /// Read the block from disk and change the pointers accordingly
-        disk_->read(blocknum, *ptr);
+        disk_->read(blockNum, *ptr);
         *data += offset;
         *ptr += BLOCK_SIZE;
         *length -= (BLOCK_SIZE - offset);
     }
 
-    size_t SimpleFS::read(size_t inumber, uint8_t *data, int length, size_t offset) {
+    ssize_t SimpleFS::read(size_t inumber, uint8_t *data, int length, size_t offset) {
         checkFsMounted();
 
         /// IMPORTANT: start reading from index = offset
-        int size_inode = (int) stat(inumber);
+        auto size_inode = stat(inumber);
 
         /**- if offset is greater than size of inode, then no data can be read
          * if length + offset exceeds the size of inode, adjust length accordingly
@@ -491,15 +494,15 @@ namespace simple_fs {
     }
 
 
-    bool SimpleFS::check_allocation(Inode *node, int read, int orig_offset, uint32_t &blocknum, bool write_indirect,
+    bool SimpleFS::check_allocation(Inode *node, int read, int orig_offset, uint32_t &blockNum, bool write_indirect,
                                     Block indirect) {
         checkFsMounted();
 
         /// If blockNum is 0, then allocate a new block
-        if (!blocknum) {
-            blocknum = allocate_block();
+        if (!blockNum) {
+            blockNum = allocate_block();
             /// Set size of node and write back to disk if it is an indirect node
-            if (!blocknum) {
+            if (!blockNum) {
                 node->Size = read + orig_offset;
                 if (write_indirect)
                     disk_->write(node->Indirect, indirect.data);

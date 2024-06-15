@@ -57,7 +57,7 @@ namespace simple_fs {
 
         /// Allocate new inode for the file
         const auto new_node_idx = create();
-        // TODO
+        Logger::instance().println("[SIMPLE_FS] Creating file with inode number %X", new_node_idx);
         if (new_node_idx == -1) {
             Console::instance().println("Error creating new inode\n");
             return false;
