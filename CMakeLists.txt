@@ -1,10 +1,19 @@
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
+# It is best practice to set the toolchain via the command line.
+# Example: cmake -DCMAKE_TOOLCHAIN_FILE=x86_64_toolchain.cmake .
+if(NOT CMAKE_CXX_COMPILER)
+    message(FATAL_ERROR "No C++ compiler specified. \
+             A toolchain can be specified with: cmake -DCMAKE_TOOLCHAIN_FILE=x86_64_toolchain.cmake .")
+endif()
+
 cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_CXX_STANDARD 20)
 
-project(BOSS C CXX ASM_NASM)
+project(BOSS
+        VERSION 0.8
+        LANGUAGES C CXX ASM_NASM)
 
 if (NOT DEFINED ARCH)
     set(ARCH "x86_64")
