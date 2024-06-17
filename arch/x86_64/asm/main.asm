@@ -4,9 +4,9 @@ extern long_mode_start
 section .text
 bits 32
 start:
-	mov esp, stack_top
-	push eax
-	push ebx
+	mov esp, stack_top ; set up the stack
+	push eax ; push the multiboot magic number
+	push ebx ; push the pointer to the multiboot structure
 
 	call check_multiboot
 	call check_cpuid
@@ -16,7 +16,7 @@ start:
 	call enable_paging
 
 	lgdt [gdt64.pointer]
-	jmp gdt64.code_segment:long_mode_start
+	jmp gdt64.kernel_code:long_mode_start
 
 	hlt
 
@@ -139,8 +139,18 @@ stack_top:
 section .rodata
 gdt64:
 	dq 0 ; gdt must begin with zero entry
-.code_segment: equ $ - gdt64
+; Kernel Code Segment Descriptor
+.kernel_code: equ $ - gdt64
 	dq (1 << 43) | (1 << 44) | (1 << 47) | (1 << 53) ; code segment
+; Kernel Data Segment Descriptor
+.kernel_data:
+    dq (1 << 43) | (1 << 47) | (1 << 53) ; data segment, read/write, ring 0
+; User Code Segment Descriptor
+.user_code:
+    dq (1 << 43) | (1 << 44) | (1 << 47) | (1 << 53) | (3 << 45) ; code segment, read/execute, non-conforming, ring 3
+; User Data Segment Descriptor
+.user_data:
+    dq (1 << 43) | (1 << 47) | (1 << 53) | (3 << 45) ; data segment, read/write, ring 3
 .pointer:
 	dw $ - gdt64 - 1 ; length
 	dq gdt64 ; address
