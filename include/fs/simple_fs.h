@@ -187,6 +187,6 @@ namespace simple_fs {
 
         bool rm(const char name[]) override;
 
-        void test();
+        void test() override;
     };
 }

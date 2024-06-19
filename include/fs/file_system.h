@@ -41,5 +41,7 @@ namespace vfs {
         virtual bool rmdir(const char name[]) = 0;
 
         virtual bool cd(const char name[]) = 0;
+
+        virtual void test() = 0;
     };
 }
