@@ -81,6 +81,18 @@ namespace std {
         return true;
     }
 
+    // Version 3 / 5
+
+    template<typename Iterator, typename UnaryPredicate>
+    constexpr bool any_of(Iterator first, Iterator last, UnaryPredicate predicate) {
+        for (; first != last; ++first) {
+            if (predicate(*first)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     template<typename ForwardIterator, typename T>
     constexpr void fill(ForwardIterator first, ForwardIterator last, const T &value) {
         for (; first != last; ++first) {
