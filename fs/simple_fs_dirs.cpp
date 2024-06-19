@@ -29,7 +29,7 @@ namespace simple_fs {
 
         ///  Free Dirent found, add the new one to the table
         tempdir.Table[idx].inum = inum;
-        tempdir.Table[idx].type = type;
+        tempdir.Table[idx].isFile = type;
         tempdir.Table[idx].valid = true;
         strcpy(tempdir.Table[idx].Name, name);
 
@@ -39,7 +39,7 @@ namespace simple_fs {
 
     Directory SimpleFS::read_dir_from_offset(uint32_t offset) {
         /**-   Sanity Check  */
-        if (offset >= ENTRIES_PER_DIR || (curr_dir.Table[offset].valid == 0) || (curr_dir.Table[offset].type != 0)) {
+        if (offset >= ENTRIES_PER_DIR || (curr_dir.Table[offset].valid == 0) || (curr_dir.Table[offset].isFile != 0)) {
             Directory temp;
             temp.Valid = false;
             return temp;
@@ -79,7 +79,7 @@ namespace simple_fs {
         return -1;
     }
 
-    bool SimpleFS::ls_dir(const char name[]) {
+    bool SimpleFS::ls_dir(const char name[], std::vector<vfs::file> &contents) {
         checkFsMounted();
 
         /// Get the directory entry offset
@@ -99,13 +99,14 @@ namespace simple_fs {
         }
 
         /// Print Directory Data
-        Console::instance().println("   inum    |       name       | type");
+        contents.clear();
+        Logger::instance().println("[SIMPLE_FS] User called ls");
+        Logger::instance().println("   inum    |       name       | type");
         for (auto temp: dir.Table) {
             if (temp.valid) {
-                if (temp.type == 1)
-                    Console::instance().println("%d | %s | %s", temp.inum, temp.Name, "file");
-                else
-                    Console::instance().println("%d | %s | %s", temp.inum, temp.Name, "dir");
+                contents.emplace_back(temp.Name, temp.isFile, temp.inum);
+                Logger::instance().println("%d | %s | %s", temp.inum, temp.Name, "file");
+                Logger::instance().println("%d | %s | %s", temp.inum, temp.Name, "dir");
             }
         }
         return true;
@@ -285,7 +286,7 @@ namespace simple_fs {
                             Console::instance().println(
                                     "        tbl_idx %d: Entry Name - \"%s\", type - %d, inum - %d\n", tbl_idx,
                                     ent.Name,
-                                    ent.type, ent.inum);
+                                    ent.isFile, ent.inum);
                         }
                     }
                 }
