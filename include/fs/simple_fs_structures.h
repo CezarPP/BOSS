@@ -130,7 +130,7 @@ namespace simple_fs {
     static_assert(sizeof(Dirent) == 24); // TODO
 
 
-    const constexpr uint32_t ENTRIES_PER_DIR = 7; /// Number of Files/Directory entries within a Directory
+    const constexpr uint32_t ENTRIES_PER_DIR = 9; /// Number of Files/Directory entries within a Directory
     /**
      * @brief Directory Structure.
      * Contains a table of directory entries for storing hierarchy.
@@ -150,6 +150,8 @@ namespace simple_fs {
             std::fill(Table.begin(), Table.end(), Dirent{});
         }
     };
+
+    static_assert(sizeof(Directory) == 240 && BLOCK_SIZE / sizeof(Directory) == 2);
 
     const constexpr uint32_t DIR_PER_BLOCK = BLOCK_SIZE / sizeof(Directory); /// Number of Directories per block
 
