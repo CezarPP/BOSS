@@ -9,6 +9,8 @@
 
 #include "memory.h"
 #include "new.h"
+#include "algorithm.h"
+#include "iterator.h"
 
 namespace std {
     template<class T, class Allocator = std::allocator<T>>
