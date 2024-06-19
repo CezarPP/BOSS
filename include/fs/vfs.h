@@ -74,6 +74,8 @@ namespace vfs {
 
     std::expected<void> rm(const char *file);
 
+    std::expected<void> rmDir(const char* file);
+
     std::expected<size_t> read(fd_t fd, uint8_t *buffer, size_t count, size_t offset = 0);
 
     std::expected<size_t> write(fd_t fd, const uint8_t *buffer, size_t count, size_t offset = 0);

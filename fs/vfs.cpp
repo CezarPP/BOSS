@@ -170,6 +170,23 @@ std::expected<void> vfs::rm(const char *file_path) {
     return std::make_unexpected<void>(std::ERROR_UNKNOWN);
 }
 
+std::expected<void> vfs::rmDir(const char *file_path) {
+    auto base_path = getPath(file_path);
+
+    if (!base_path.is_valid()) {
+        return std::make_unexpected<void>(std::ERROR_INVALID_FILE_PATH);
+    }
+
+    auto &fs = getFs(base_path);
+
+    bool success = fs.file_system->rmdir(file_path);
+    if (success)
+        return std::make_expected();
+
+    Logger::instance().println("[VFS] Error rm");
+    return std::make_unexpected<void>(std::ERROR_UNKNOWN);
+}
+
 std::expected<size_t> vfs::read(fd_t fd, uint8_t *buffer, size_t count, size_t offset) {
     if (!handles::has_handle(fd)) {
         return std::make_unexpected<size_t>(std::ERROR_INVALID_FILE_DESCRIPTOR);
