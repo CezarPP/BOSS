@@ -106,14 +106,23 @@ namespace std {
             return *this;
         }
 
-        template<typename... Args>
-        T &emplace_back(Args &&... args) {
-            if (size_ == capacity_) {
-                reallocate(capacity_ == 0 ? 1 : 2 * capacity_);
+        T& emplace_back(){
+            if(size_ == capacity_) {
+                reallocate(capacity_ == 0? 1 : 2 * capacity_);
             }
-            new(data_ + size_) T(std::forward<Args>(args)...);  // Placement new
-            ++size_;
-            return data_ + size_;
+            new (&data_[size_++]) T();
+            return back();
+        }
+
+        template<typename... Args>
+        T& emplace_back(Args... args){
+            if(size_ == capacity_) {
+                reallocate(capacity_ == 0? 1 : 2 * capacity_);
+            }
+
+            new (&data_[size_++]) T{std::forward<Args>(args)...};
+
+            return back();
         }
 
         void push_back(const T &value) {
