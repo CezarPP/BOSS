@@ -78,7 +78,7 @@ namespace simple_fs {
         return true;
     }
 
-    std::expected<uint32_t> SimpleFS::getInode(const char name[NAME_SIZE]) {
+    std::expected<size_t> SimpleFS::getInode(const char name[NAME_SIZE]) {
         checkFsMounted();
 
         /// Check if such file exists
@@ -88,7 +88,7 @@ namespace simple_fs {
             }
         Logger::instance().println("[SIMPLE_FS] File does not exist!");
 
-        return std::make_unexpected<uint32_t>((size_t) 0);
+        return std::make_unexpected<size_t>((size_t) 0);
     }
 
     bool SimpleFS::cd(const char name[NAME_SIZE]) {

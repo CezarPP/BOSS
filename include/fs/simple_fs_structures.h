@@ -8,6 +8,7 @@
 #pragma once
 
 #include "util/types.h"
+#include "std/array.h"
 
 namespace simple_fs {
     const constexpr uint32_t MAGIC_NUMBER = 0xf0f03410; ///> Magic number helps in checking Validity of the FileSystem on disk

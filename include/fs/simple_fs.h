@@ -175,7 +175,7 @@ namespace simple_fs {
         */
         ssize_t write(size_t inumber, const uint8_t *data, int length, size_t offset) override;
 
-        std::expected<uint32_t> getInode(const char *name) override;
+        std::expected<size_t> getInode(const char *name) override;
 
         bool rmdir(const char name[NAME_SIZE]) override;
 

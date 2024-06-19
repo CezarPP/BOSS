@@ -36,7 +36,7 @@ namespace vfs {
 
         virtual bool rm(const char name[]) = 0;
 
-        virtual std::expected<uint32_t> getInode(const char *name) = 0;
+        virtual std::expected<size_t> getInode(const char *name) = 0;
 
         virtual bool rmdir(const char name[]) = 0;
 
