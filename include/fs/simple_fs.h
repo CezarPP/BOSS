@@ -128,8 +128,6 @@ namespace simple_fs {
         */
         bool remove(size_t inumber);
 
-        ssize_t stat(size_t inumber);
-
         //////// DIRECTORIES
         Directory add_dir_entry(Directory dir, uint32_t inum, uint32_t type, const char name[]);
 
@@ -186,6 +184,8 @@ namespace simple_fs {
         bool ls(std::vector<vfs::file> &contents) override;
 
         bool rm(const char name[]) override;
+
+        ssize_t stat(size_t inumber) override;
 
         void test() override;
     };

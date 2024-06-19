@@ -42,6 +42,8 @@ namespace vfs {
 
         virtual bool cd(const char name[]) = 0;
 
+        virtual ssize_t stat(size_t inumber) = 0;
+
         virtual void test() = 0;
     };
 }

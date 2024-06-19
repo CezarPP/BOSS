@@ -11,8 +11,6 @@
 #include "fs/simple_fs.h"
 
 namespace {
-    constexpr const size_t OPEN_CREATE = 0x1;
-
     std::string partitionTypeToString(vfs::PartitionType type) {
         switch (type) {
             case vfs::PartitionType::SIMPLE_FS:
@@ -36,7 +34,7 @@ namespace {
         if (!p.is_valid())
             return p;
 
-        kAssert(!p.is_relative(), "Can't support relative paths at the moment...");
+        // kAssert(!p.is_relative(), "Can't support relative paths at the moment...");
         return p;
     }
 
@@ -47,6 +45,8 @@ namespace {
         if (base_path.is_root()) {
             for (auto &mp: mount_point_list) {
                 if (mp.mount_point.is_root()) {
+                    kAssert(mp.fs_type == vfs::PartitionType::SIMPLE_FS,
+                            "[VFS] Only SimpleFS is supported at the moment!");
                     return mp;
                 }
             }
@@ -69,6 +69,8 @@ namespace {
             }
         }
 
+        kAssert(mount_point_list[best].fs_type == vfs::PartitionType::SIMPLE_FS,
+                "[VFS] Only SimpleFS is supported at the moment!");
         return mount_point_list[best_match];
     }
 
@@ -183,8 +185,59 @@ std::expected<void> vfs::rmDir(const char *file_path) {
     if (success)
         return std::make_expected();
 
-    Logger::instance().println("[VFS] Error rm");
+    Logger::instance().println("[VFS] Error rmDir");
     return std::make_unexpected<void>(std::ERROR_UNKNOWN);
+}
+
+std::expected<void> vfs::cd(const char *dir) {
+    auto base_path = getPath(dir);
+
+    if (!base_path.is_valid()) {
+        return std::make_unexpected<void>(std::ERROR_INVALID_FILE_PATH);
+    }
+
+    auto &fs = getFs(base_path);
+
+    bool success = fs.file_system->cd(dir);
+    if (success)
+        return std::make_expected();
+
+    Logger::instance().println("[VFS] Error changing dir");
+    return std::make_unexpected<void>(std::ERROR_UNKNOWN);
+}
+
+std::expected<void> vfs::ls(std::vector<file> &contents) {
+    Path base_path{"/"};
+
+    if (!base_path.is_valid()) {
+        return std::make_unexpected<void>(std::ERROR_INVALID_FILE_PATH);
+    }
+
+    auto &fs = getFs(base_path);
+
+    bool success = fs.file_system->ls(contents);
+    if (success)
+        return std::make_expected();
+
+    Logger::instance().println("[VFS] Error listing dir");
+    return std::make_unexpected<void>(std::ERROR_UNKNOWN);
+}
+
+std::expected<ssize_t> vfs::stat(fd_t fd) {
+    Path base_path{"/"};
+
+    if (!base_path.is_valid()) {
+        return std::make_unexpected<ssize_t>(std::ERROR_INVALID_FILE_PATH);
+    }
+
+    auto &fs = getFs(base_path);
+
+    ssize_t success = fs.file_system->stat(handles::get_handle(fd));
+    if (success != -1)
+        return success;
+
+    Logger::instance().println("[VFS] Error calling stat");
+    return std::make_unexpected<ssize_t>(std::ERROR_UNKNOWN);
 }
 
 std::expected<size_t> vfs::read(fd_t fd, uint8_t *buffer, size_t count, size_t offset) {

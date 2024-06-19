@@ -66,6 +66,7 @@ namespace vfs {
 
     void init(Disk *disk);
 
+    constexpr const size_t OPEN_CREATE = 0x1;
     std::expected<fd_t> open(const char *filePath, size_t flags);
 
     void close(fd_t fd);
@@ -80,5 +81,12 @@ namespace vfs {
 
     std::expected<size_t> write(fd_t fd, const uint8_t *buffer, size_t count, size_t offset = 0);
 
+    std::expected<void> ls(std::vector<file>& contents);
+
     std::expected<void> mount(PartitionType type, const char *mount_point, Disk *disk);
+
+    // vfs should not have cd, it should be independent
+    std::expected<void> cd(const char* dir);
+
+    std::expected<ssize_t> stat(fd_t fd);
 }
