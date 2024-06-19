@@ -7,6 +7,7 @@
 
 #include "fs/simple_fs.h"
 #include "util/console_printer.h"
+#include "std/expected.h"
 
 namespace simple_fs {
     Directory SimpleFS::rm_helper(Directory dir, const char name[NAME_SIZE]) {
@@ -21,7 +22,7 @@ namespace simple_fs {
         }
 
         ///   Check if directory
-        if (dir.Table[offset].type == 0) {
+        if (dir.Table[offset].isFile == 0) {
             return rmdir_helper(dir, name);
         }
 
@@ -51,7 +52,7 @@ namespace simple_fs {
         /// Check if such file exists
         for (auto &file: curr_dir.Table)
             if (file.valid && strcmp(file.Name, name) == 0) {
-                Console::instance().printStr("File already exists");
+                // Console::instance().printStr("File already exists");
                 return false;
             }
 
@@ -77,11 +78,24 @@ namespace simple_fs {
         return true;
     }
 
+    std::expected<uint32_t> SimpleFS::getInode(const char name[NAME_SIZE]) {
+        checkFsMounted();
+
+        /// Check if such file exists
+        for (auto &file: curr_dir.Table)
+            if (file.valid && strcmp(file.Name, name) == 0) {
+                return file.inum;
+            }
+        Logger::instance().println("[SIMPLE_FS] File does not exist!");
+
+        return std::make_unexpected<uint32_t>((size_t) 0);
+    }
+
     bool SimpleFS::cd(const char name[NAME_SIZE]) {
         checkFsMounted();
 
         int offset = dir_lookup(curr_dir, name);
-        if ((offset == -1) || (curr_dir.Table[offset].type == 1)) {
+        if ((offset == -1) || (curr_dir.Table[offset].isFile == 1)) {
             Console::instance().println("No such directory");
             return false;
         }
@@ -95,11 +109,11 @@ namespace simple_fs {
         return true;
     }
 
-    bool SimpleFS::ls() {
+    bool SimpleFS::ls(std::vector<vfs::file> &contents) {
         checkFsMounted();
 
         char name[] = ".";
-        return ls_dir(name);
+        return ls_dir(name, contents);
     }
 
     bool SimpleFS::rm(const char name[]) {
