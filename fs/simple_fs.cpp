@@ -121,7 +121,7 @@ namespace simple_fs {
 
         Dirent temp{};
         temp.inum = 0;
-        temp.type = false;
+        temp.isFile = false;
         temp.valid = true;
         char dot[] = ".";
         char dotDot[] = "..";
@@ -277,7 +277,7 @@ namespace simple_fs {
     bool SimpleFS::load_inode(size_t inumber, Inode *node) {
         checkFsMounted();
 
-        if ((inumber > MetaData.Inodes)) { // || (inumber < 1)) {
+        if ((inumber > MetaData.Inodes)) {
             Logger::instance().println("[SIMPLE_FS] Invalid inode! %X", inumber);
             return false;
         }
