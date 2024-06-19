@@ -9,6 +9,7 @@
 #pragma once
 
 #include "arch/x86_64/exceptions.h"
+#include "util/types.h"
 
 namespace std {
     /*
@@ -20,8 +21,8 @@ namespace std {
     class allocator {
     public:
         using value_type = T;
-        using size_type = std::size_t;
-        using difference_type = std::ptrdiff_t;
+        using size_type = size_t;
+        using difference_type = ptrdiff_t;
 
         allocator() noexcept = default;  // Default constructor
         allocator(const allocator &) noexcept = default;  // Copy constructor
