@@ -111,16 +111,21 @@ namespace simple_fs {
     constexpr const bool DIR_TYPE = false;
 
     struct Dirent {
-        bool type; ///>  type = 1 for file, type = 0 for directory
+        bool isFile; ///>  type = 1 for file, type = 0 for directory
         bool valid; ///>  valid bit to check if the entry is valid
         uint32_t inum; ///>  inum for Inodes or offset for dir
         char Name[NAME_SIZE]{}; ///> File/Directory Name
 
-        Dirent() : type(false), valid(false), inum(0) {
+        Dirent() : isFile(false), valid(false), inum(0) {
             for (auto &it: Name)
                 it = 0;
         }
+
+        vfs::file toFile() {
+            return {Name, isFile, inum};
+        }
     };
+
     static_assert(sizeof(Dirent) == 24); // TODO
 
 
