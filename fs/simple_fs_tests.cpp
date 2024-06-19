@@ -63,6 +63,44 @@ namespace simple_fs {
         kAssert(dir_idx == -1, "[SIMPLE_FS] Directory still exists after removal");
     }
 
+    void test_change_directory(SimpleFS &fs) {
+        // Create a directory to change into
+        bool created = fs.mkdir("test_dir");
+        kAssert(created, "[SIMPLE_FS] Failed to create directory for cd test");
+
+        // Change into the new directory
+        bool changed = fs.cd("test_dir");
+        kAssert(changed, "[SIMPLE_FS] Failed to change directory");
+
+        // Check current directory is now 'test_dir'
+        kAssert(fs.curr_dir.Name == std::string("test_dir"), "[SIMPLE_FS] cd did not change to 'test_dir'");
+
+        // Change back to parent directory
+        changed = fs.cd("..");
+        kAssert(changed, "[SIMPLE_FS] Failed to change back to parent directory");
+    }
+
+    void test_list_directory(SimpleFS &fs) {
+        // Assuming current directory is not empty and contains at least one known file or directory
+        std::vector<vfs::file> contents;
+
+        bool created = fs.touch("known_file");
+        kAssert(created, "[SIMPLE_FS] Failed to create a file to test ls");
+
+        bool listed = fs.ls(contents);
+        kAssert(listed, "[SIMPLE_FS] Failed to list directory contents");
+
+        // Verify that the contents include known files or directories
+        bool found = false;
+        for (const auto &file: contents) {
+            if (file.fileName == "known_file" && file.isFile) {
+                found = true;
+                break;
+            }
+        }
+        kAssert(found, "[SIMPLE_FS] Known file or directory not found during ls");
+    }
+
     void SimpleFS::test() {
         Logger::instance().println("[SIMPLE_FS] Testing...");
 
@@ -77,6 +115,12 @@ namespace simple_fs {
 
         Logger::instance().println("[SIMPLE_FS] Testing directory removal...");
         test_remove_directory(*this);
+
+        Logger::instance().println("SIMPLE_FS Testing change directory...");
+        test_change_directory(*this);
+
+        Logger::instance().println("SIMPLE_FS Testing list directory...");
+        test_list_directory(*this);
 
         Logger::instance().println("[SIMPLE_FS] Testing succeeded!");
     }
