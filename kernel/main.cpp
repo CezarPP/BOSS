@@ -1,5 +1,4 @@
 #include "fs/simple_fs.h"
-// #include "fs/vfs.h"
 
 #include "arch/x86_64/interrupts.h"
 #include "drivers/keyboard.h"
@@ -9,6 +8,7 @@
 #include "allocators/virtual_allocator.h"
 #include "allocators/kalloc_tests.h"
 #include "allocators/kalloc.h"
+#include "fs/vfs_tests.h"
 
 extern "C" void kernel_main(uint64_t multibootAndMagic) {
     // [CONSOLE] Initialize console
@@ -70,8 +70,10 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     simple_fs::SimpleFS simpleFs{&ata0m};
     simpleFs.format();
     simpleFs.debug();
-    simpleFs.mount();
-    simpleFs.test();
+
+    // [VFS]
+    vfs::init(&ata0m);
+    vfs::test();
 
 
     while (true) {
