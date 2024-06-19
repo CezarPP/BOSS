@@ -25,13 +25,11 @@ namespace simple_fs {
 
         void checkFsMounted() const;
 
-
         /**
          * @brief creates a new inode
          * @return the inumber of the newly created inode
         */
         ssize_t create();
-
 
         /**
          * @brief Allocates the first free block from free block bitmap
@@ -116,12 +114,6 @@ namespace simple_fs {
         void format();
 
         /**
-         * @brief Mounts the file system onto the disk
-         * @return void function; returns nothing, the mount should be successful
-        */
-        void mount();
-
-        /**
          * @brief loads inode corresponding to inumber into node
          * @param inumber index into inode table
          * @param node pointer to inode
@@ -138,27 +130,6 @@ namespace simple_fs {
 
         ssize_t stat(size_t inumber);
 
-        /**
-         * @brief Read from disk
-         * @param inumber index into the inode table of the corresponding inode
-         * @param data data buffer
-         * @param length bytes to be read from disk
-         * @param offset start point of the read operation
-         * @return bytes read from disk; -1 in case of an error
-        */
-        ssize_t read(size_t inumber, uint8_t *data, int length, size_t offset);
-
-        /**
-         * @brief write to the disk
-         * @param inumber index into the inode table of the corresponding inode
-         * @param data data buffer
-         * @param length bytes to be written to disk
-         * @param offset start point of the write operation
-         * @return bytes written to disk; -1 in case of an error
-        */
-        ssize_t write(size_t inumber, const uint8_t *data, int length, size_t offset);
-
-
         //////// DIRECTORIES
         Directory add_dir_entry(Directory dir, uint32_t inum, uint32_t type, const char name[]);
 
@@ -168,25 +139,53 @@ namespace simple_fs {
 
         int dir_lookup(Directory dir, const char name[]);
 
-        bool ls_dir(const char name[]);
-
-        bool mkdir(const char name[NAME_SIZE]);
-
+        bool ls_dir(const char name[], std::vector<vfs::file> &contents);
 
         void stat();
 
-        ///////// FILES
         Directory rm_helper(Directory dir, const char name[NAME_SIZE]);
-
-        bool rmdir(const char name[NAME_SIZE]);
-
-        bool touch(const char name[NAME_SIZE]);
 
         bool cd(const char name[NAME_SIZE]);
 
-        bool ls();
+        /// Function implementations of the file system interface
 
-        bool rm(const char name[]);
+        /**
+         * @brief Mounts the file system onto the disk
+         * @return void function; returns nothing, the mount should be successful
+        */
+        void mount() override;
+
+        /**
+         * @brief Read from disk
+         * @param inumber index into the inode table of the corresponding inode
+         * @param data data buffer
+         * @param length bytes to be read from disk
+         * @param offset start point of the read operation
+         * @return bytes read from disk; -1 in case of an error
+        */
+        ssize_t read(size_t inumber, uint8_t *data, int length, size_t offset) override;
+
+        /**
+         * @brief write to the disk
+         * @param inumber index into the inode table of the corresponding inode
+         * @param data data buffer
+         * @param length bytes to be written to disk
+         * @param offset start point of the write operation
+         * @return bytes written to disk; -1 in case of an error
+        */
+        ssize_t write(size_t inumber, const uint8_t *data, int length, size_t offset) override;
+
+        std::expected<uint32_t> getInode(const char *name) override;
+
+        bool rmdir(const char name[NAME_SIZE]) override;
+
+        bool mkdir(const char name[NAME_SIZE]) override;
+
+        bool touch(const char name[NAME_SIZE]) override;
+
+        bool ls(std::vector<vfs::file> &contents) override;
+
+        bool rm(const char name[]) override;
 
         void test();
     };

@@ -11,6 +11,7 @@
 #include "path.h"
 #include "file.h"
 #include "drivers/disk_driver.h"
+#include "std/expected.h"
 
 namespace vfs {
     class FileSystem {
@@ -21,22 +22,24 @@ namespace vfs {
 
         virtual ~FileSystem() = default;
 
-        virtual void init() {}
+        virtual void mount() = 0;
 
-        // virtual size_t read(const Path &file_path, char *buffer, size_t count, size_t offset, size_t &read) = 0;
+        virtual ssize_t read(size_t inum, uint8_t *buffer, int length, size_t offset) = 0;
 
-        // virtual size_t write(const Path &file_path, const char *buffer, size_t count, size_t offset, size_t &written) = 0;
+        virtual ssize_t write(size_t inumber, const uint8_t *data, int length, size_t offset) = 0;
 
-        // virtual size_t clear(const Path &file_path, size_t count, size_t offset, size_t &written) = 0;
+        virtual bool ls(std::vector<vfs::file> &contents) = 0;
 
-        // virtual size_t get_file(const Path &file_path, vfs::file &file) = 0;
+        virtual bool touch(const char* file_path) = 0;
 
-        // virtual size_t ls(const Path &file_path, std::vector<vfs::file> &contents) = 0;
+        virtual bool mkdir(const char name[]) = 0;
 
-        // virtual size_t touch(const Path &file_path) = 0;
+        virtual bool rm(const char name[]) = 0;
 
-        // virtual size_t mkdir(const Path &file_path) = 0;
+        virtual std::expected<uint32_t> getInode(const char* name) = 0;
 
-        // virtual size_t rm(const Path &file_path) = 0;
+        virtual bool rmdir(const char name[]) = 0;
+
+        // virtual bool cd(const char name[]) = 0;
     };
 }
