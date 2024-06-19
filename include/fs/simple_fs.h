@@ -145,9 +145,9 @@ namespace simple_fs {
 
         Directory rm_helper(Directory dir, const char name[NAME_SIZE]);
 
-        bool cd(const char name[NAME_SIZE]);
-
         /// Function implementations of the file system interface
+
+        bool cd(const char name[NAME_SIZE]) override;
 
         /**
          * @brief Mounts the file system onto the disk

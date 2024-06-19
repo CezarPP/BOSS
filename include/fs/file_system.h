@@ -30,16 +30,16 @@ namespace vfs {
 
         virtual bool ls(std::vector<vfs::file> &contents) = 0;
 
-        virtual bool touch(const char* file_path) = 0;
+        virtual bool touch(const char *file_path) = 0;
 
         virtual bool mkdir(const char name[]) = 0;
 
         virtual bool rm(const char name[]) = 0;
 
-        virtual std::expected<uint32_t> getInode(const char* name) = 0;
+        virtual std::expected<uint32_t> getInode(const char *name) = 0;
 
         virtual bool rmdir(const char name[]) = 0;
 
-        // virtual bool cd(const char name[]) = 0;
+        virtual bool cd(const char name[]) = 0;
     };
 }
