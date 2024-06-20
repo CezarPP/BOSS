@@ -44,6 +44,8 @@ namespace vfs {
 
         virtual ssize_t stat(size_t inumber) = 0;
 
+        virtual std::string pwd() = 0;
+
         virtual void test() = 0;
     };
 }

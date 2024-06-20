@@ -240,6 +240,12 @@ std::expected<ssize_t> vfs::stat(fd_t fd) {
     return std::make_unexpected<ssize_t>(std::ERROR_UNKNOWN);
 }
 
+std::string vfs::pwd() {
+    auto &fs = getFs(Path{"/"});
+
+    return fs.file_system->pwd();
+}
+
 std::expected<size_t> vfs::read(fd_t fd, uint8_t *buffer, size_t count, size_t offset) {
     if (!handles::has_handle(fd)) {
         return std::make_unexpected<size_t>(std::ERROR_INVALID_FILE_DESCRIPTOR);

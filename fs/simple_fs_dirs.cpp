@@ -293,4 +293,8 @@ namespace simple_fs {
             }
         }
     }
+
+    std::string SimpleFS::pwd() {
+        return curr_dir.Name;
+    }
 }

@@ -187,6 +187,8 @@ namespace simple_fs {
 
         ssize_t stat(size_t inumber) override;
 
+        std::string pwd() override;
+
         void test() override;
     };
 }

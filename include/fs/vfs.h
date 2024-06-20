@@ -71,6 +71,8 @@ namespace vfs {
 
     void close(fd_t fd);
 
+    std::string pwd();
+
     std::expected<void> mkdir(const char *file);
 
     std::expected<void> rm(const char *file);
