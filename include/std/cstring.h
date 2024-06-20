@@ -77,3 +77,64 @@ inline char *strcpy(char *dest, const char *src) {
     // Return the starting address of the destination
     return start;
 }
+
+inline size_t strcspn(const char *dest, const char *src) {
+    const char *p, *q;
+
+    // Loop through each character in 'dest'
+    for (p = dest; *p != '\0'; ++p) {
+        // For each character in 'dest', loop through each character in 'src'
+        for (q = src; *q != '\0'; ++q) {
+            // If a matching character is found, return the length of the segment before this character
+            if (*p == *q) {
+                return p - dest;
+            }
+        }
+    }
+
+    // If no character from 'src' is found in 'dest', return the total length of 'dest'
+    return p - dest;
+}
+
+inline size_t strspn(const char *dest, const char *src) {
+    const char *p, *q;
+
+    // Loop through each character in 'dest'
+    for (p = dest; *p != '\0'; ++p) {
+        // Loop through each character in 'src'
+        for (q = src; *q != '\0'; ++q) {
+            // Check if the current character of 'dest' is in 'src'
+            if (*p == *q) {
+                break;  // Found the character in 'src', break to check the next character of 'dest'
+            }
+        }
+        // If the end of 'src' was reached without finding the character, return the length of the segment
+        if (*q == '\0') {
+            return p - dest;
+        }
+    }
+
+    // All characters of 'dest' up to the null terminator were found in 'src'
+    return p - dest;
+}
+
+inline char *strtok(char *str, const char *delim) {
+    static char *buffer;
+
+    if (str != nullptr)
+        buffer = str;
+
+    buffer += strspn(buffer, delim);
+
+    if (*buffer == '\0')
+        return nullptr;
+
+    char *const tokenBegin = buffer;
+
+    buffer += strcspn(buffer, delim);
+
+    if (*buffer != '\0')
+        *buffer++ = '\0';
+
+    return tokenBegin;
+}
