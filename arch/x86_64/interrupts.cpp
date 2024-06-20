@@ -3,6 +3,7 @@
 #include "std/cstring.h"
 #include "arch/x86_64/exceptions.h"
 #include "arch/x86_64/logging.h"
+#include "arch/x86_64/system_calls.h"
 
 constexpr auto NUM_IDT_ENTRIES = 256;
 
@@ -161,10 +162,11 @@ void idtSetGate(Byte num, Address base, uint16_t sel, Byte flags) {
 }
 
 extern "C" {
-    void syscallHandler(SystemCallRegisters *registersState) {
-        Logger::instance().println("[SYSCALL] System call handler...");
-        dumpRegisterState(registersState);
-    }
+void syscallHandler(SystemCallRegisters *registersState) {
+    Logger::instance().println("[SYSCALL] System call handler...");
+    dumpRegisterState(registersState);
+    sys_calls::doSystemCall(registersState);
+}
 }
 
 void setupInterrupts() {
@@ -235,6 +237,11 @@ void setupInterrupts() {
 
     idtSetGate(0x80, (Address) isr128, SYSTEM_CS, IDT_FLAG);  // 0xEE present, ring 3
     idtLoad();
+
+    Logger::instance().println("[KERNEL] Setting up system calls...");
+    sys_calls::populateSyscallArray();
+    Logger::instance().println("[KERNEL] Finished setting up system calls.");
+
     Logger::instance().println("[KERNEL] Finished setting up interrupts");
 }
 
