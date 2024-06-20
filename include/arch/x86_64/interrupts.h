@@ -15,6 +15,15 @@ inline __attribute__((always_inline)) void haltCpu() {
     asm volatile("hlt");
 }
 
+struct SystemCallRegisters {
+    uint64_t rax, rbx, rcx, rdx;
+    uint64_t rsi, rdi, r8, r9;
+    uint64_t r10, r11, r12, r13;
+    uint64_t r14, r15, rbp;
+    uint64_t code, rip;
+    uint64_t cs, rflags;
+    uint64_t rsp, ds;
+} __attribute__((packed));
 
 struct RegistersState {
     uint64_t rax, rbx, rcx, rdx, rsi, rdi, rbp;
