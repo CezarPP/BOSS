@@ -10,7 +10,7 @@
 #include "interrupts.h"
 #include "../../std/source_location.h"
 
-void dumpRegstate(RegistersState *reg_state);
+void dumpRegisterState(SystemCallRegisters *);
 
 void kPanicAt(const char *message, std::source_location location);
 

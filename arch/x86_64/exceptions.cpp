@@ -75,3 +75,20 @@ void kPanicAt(const char *message, std::source_location location) {
 
     haltCpu();
 }
+
+void dumpRegisterState(SystemCallRegisters *regs) {
+    Logger::instance().println("Dumping Registers:");
+    Logger::instance().println("RAX %X, RBX %X", regs->rax, regs->rbx);
+    Logger::instance().println("RCX %X, RDX %X", regs->rcx, regs->rdx);
+    Logger::instance().println("RSI %X, RSP %X", regs->rsi, regs->rsp);
+    Logger::instance().println("RDI %X, RBP %X", regs->rdi, regs->rbp);
+    Logger::instance().println("R8  %X, R9  %X", regs->r8, regs->r9);
+    Logger::instance().println("R10 %X, R11 %X", regs->r10, regs->r11);
+    Logger::instance().println("R12 %X, R13 %X", regs->r13, regs->r13);
+    Logger::instance().println("R14 %X, R15 %X", regs->r14, regs->r15);
+    Logger::instance().println("CS  %X, DS  %X", regs->cs, regs->ds);
+    Logger::instance().println("RIP %X", regs->rip);
+    Logger::instance().println("RFLAGS %X", regs->rflags);
+    // Logger::instance().println("INT_NO %X", regs->int_no);
+    // Logger::instance().println("ERR_NO %X", regs->err_code);
+}
