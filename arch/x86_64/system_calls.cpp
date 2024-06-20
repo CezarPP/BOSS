@@ -25,35 +25,40 @@ namespace sys_calls {
         }
     }
 
+    /*
+     * Calling convention, syscall number through rax
+     * Parameters in rdi, rsi, rdx, r10, r8, r9
+     */
+
     void sc_open(SystemCallRegisters *regs) {
-        auto file = reinterpret_cast<char *>(regs->rbx);
-        auto flags = regs->rcx;
+        auto file = reinterpret_cast<char *>(regs->rdi);
+        auto flags = regs->rsi;
 
         auto status = vfs::open(file, flags);
         regs->rax = expected_to_i64(status);
     }
 
     void sc_close(SystemCallRegisters *regs) {
-        auto fd = regs->rbx;
+        auto fd = regs->rdi;
 
         vfs::close(fd);
     }
 
     void sc_read(SystemCallRegisters *regs) {
-        auto fd = regs->rbx;
-        auto buffer = reinterpret_cast<uint8_t *>(regs->rcx);
+        auto fd = regs->rdi;
+        auto buffer = reinterpret_cast<uint8_t *>(regs->rsi);
         auto max = regs->rdx;
-        auto offset = regs->rsi;
+        auto offset = regs->r10;
 
         auto status = vfs::read(fd, buffer, max, offset);
         regs->rax = expected_to_i64(status);
     }
 
     void sc_write(SystemCallRegisters *regs) {
-        auto fd = regs->rbx;
-        auto buffer = reinterpret_cast<uint8_t *>(regs->rcx);
+        auto fd = regs->rdi;
+        auto buffer = reinterpret_cast<uint8_t *>(regs->rsi);
         auto max = regs->rdx;
-        auto offset = regs->rsi;
+        auto offset = regs->r10;
 
         auto status = vfs::write(fd, buffer, max, offset);
         regs->rax = expected_to_i64(status);
@@ -62,34 +67,34 @@ namespace sys_calls {
     void sc_pwd(SystemCallRegisters *regs) {
         auto p = vfs::pwd();
 
-        auto buffer = reinterpret_cast<char *>(regs->rbx);
+        auto buffer = reinterpret_cast<char *>(regs->rdi);
         std::copy(p.begin(), p.end(), buffer);
         buffer[p.size()] = '\0';
     }
 
     void sc_cwd(SystemCallRegisters *regs) {
-        auto p = reinterpret_cast<const char *>(regs->rbx);
+        auto p = reinterpret_cast<const char *>(regs->rdi);
 
         auto status = vfs::cd(p);
         regs->rax = expected_to_i64(status);
     }
 
     void sc_mkdir(SystemCallRegisters *regs) {
-        auto file = reinterpret_cast<char *>(regs->rbx);
+        auto file = reinterpret_cast<char *>(regs->rdi);
 
         auto status = vfs::mkdir(file);
         regs->rax = expected_to_i64(status);
     }
 
     void sc_rm(SystemCallRegisters *regs) {
-        auto file = reinterpret_cast<char *>(regs->rbx);
+        auto file = reinterpret_cast<char *>(regs->rdi);
 
         auto status = vfs::rm(file);
         regs->rax = expected_to_i64(status);
     }
 
     void sc_rmdir(SystemCallRegisters *regs) {
-        auto dir = reinterpret_cast<char *>(regs->rbx);
+        auto dir = reinterpret_cast<char *>(regs->rdi);
 
         auto status = vfs::rmDir(dir);
         regs->rax = expected_to_i64(status);
