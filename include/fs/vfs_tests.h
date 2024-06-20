@@ -17,7 +17,6 @@ namespace vfs {
         auto fd = vfs::open(fileName, OPEN_CREATE);
         kAssert(fd, "[VFS] Failed to open new file!");
 
-        uint8_t buffer[BLOCK_SIZE] = {0};
         auto readBytes = vfs::stat(fd.value());
         kAssert(readBytes && *readBytes == 0, "[VFS] New file should be empty");
 
