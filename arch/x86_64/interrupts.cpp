@@ -68,6 +68,7 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
+extern void isr128();
 
 extern void irq0();
 extern void irq1();
@@ -159,6 +160,13 @@ void idtSetGate(Byte num, Address base, uint16_t sel, Byte flags) {
     idt[num].zero2 = 0x0;
 }
 
+extern "C" {
+    void syscallHandler(SystemCallRegisters *registersState) {
+        Logger::instance().println("[SYSCALL] System call handler...");
+        dumpRegisterState(registersState);
+    }
+}
+
 void setupInterrupts() {
     // Sets the IDT pointer
     IDT_ptr = {.limit = sizeof(InterruptDescriptor) * NUM_IDT_ENTRIES - 1,
@@ -224,6 +232,8 @@ void setupInterrupts() {
     for (int i = 48; i < NUM_IDT_ENTRIES; i++) {
         idtSetGate(i, (Address) defaultIRQ, SYSTEM_CS, IDT_FLAG);
     }
+
+    idtSetGate(0x80, (Address) isr128, SYSTEM_CS, IDT_FLAG);  // 0xEE present, ring 3
     idtLoad();
     Logger::instance().println("[KERNEL] Finished setting up interrupts");
 }
@@ -254,6 +264,8 @@ void isrHandler(RegistersState *state) {
     } else {
         if (interruptHandlers[int_no]) {
             Logger::instance().println("[INTERRUPTS] Calling ISR handler nr: %X", int_no);
+            Logger::instance().println("[INTERRUPTS] Maybe syscall with number %X, first arg %X",
+                                       state->rax, state->rbx);
             auto handler = interruptHandlers[int_no];
             handler();
         } else {
@@ -264,7 +276,8 @@ void isrHandler(RegistersState *state) {
 }
 
 bool isInterestingInterrupt(uint64_t intNo) {
-    return intNo != 0x20 && intNo != 0x21;
+    // Interrupt 0x2e has to do with the ATA disk, but we are using PIO mode, so we don't need the interrupt
+    return intNo != 0x20 && intNo != 0x21 && intNo != 0x2e;
 }
 
 void irqHandler(RegistersState *state) {
@@ -280,8 +293,9 @@ void irqHandler(RegistersState *state) {
     Port8Bit::write8(0x20, 0x20);
 
     if (interruptHandlers[state->int_no]) {
-        if (isInterestingInterrupt(state->int_no))
+        if (isInterestingInterrupt(state->int_no)) {
             Logger::instance().println("[INTERRUPTS] Calling IRQ handler nr: %X", state->int_no);
+        }
         auto handler = interruptHandlers[state->int_no];
         handler();
     } else {

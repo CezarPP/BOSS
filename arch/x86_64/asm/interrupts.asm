@@ -32,6 +32,44 @@ extern irqHandler
 ; Default interrupt handler
 extern defHandler
 
+
+%macro save_context 0
+    push rbp
+    push r15
+    push r14
+    push r13
+    push r12
+    push r11
+    push r10
+    push r9
+    push r8
+    push rdi
+    push rsi
+    push rdx
+    push rcx
+    push rbx
+    push rax
+%endmacro
+
+%macro restore_context 0
+    pop rax
+    pop rbx
+    pop rcx
+    pop rdx
+    pop rsi
+    pop rdi
+    pop r8
+    pop r9
+    pop r10
+    pop r11
+    pop r12
+    pop r13
+    pop r14
+    pop r15
+    pop rbp
+%endmacro
+
+
 ; Push all registers onto the stack, no arguments
 %macro pushaq 0
 	push rax
@@ -182,3 +220,28 @@ irq_common_stub:
     add rsp, 16
     sti
     iretq
+
+
+; SYSTEM CALLS
+
+%macro ISR_SYSCALL 1
+  global isr%1
+  isr%1:
+    cli            ; Clear interrupts
+    push byte 0    ; Dummy error code for consistency in stack layout
+    push byte %1   ; Interrupt number
+    jmp syscall_common_stub
+%endmacro
+
+ISR_SYSCALL 128  ; Define the system call ISR at vector 0x80
+
+extern syscallHandler
+
+syscall_common_stub:
+    save_context
+    mov rdi, rsp   ; Pass pointer to register state to the handler
+    call syscallHandler  ; External handler defined in C
+    restore_context
+    add rsp, 16    ; Clean up the dummy error code and interrupt number
+    sti            ; Set interrupts
+    iretq          ; Return from interrupt

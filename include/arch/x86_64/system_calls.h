@@ -10,27 +10,23 @@
 
 #include "util/types.h"
 
-struct syscall_regs {
-    // sse_128 xmm_registers[16];
-    uint64_t rax;
-    uint64_t rbx;
-    uint64_t rcx;
-    uint64_t rdx;
-    uint64_t rsi;
-    uint64_t rdi;
-    uint64_t r8;
-    uint64_t r9;
-    uint64_t r10;
-    uint64_t r11;
-    uint64_t r12;
-    uint64_t r13;
-    uint64_t r14;
-    uint64_t r15;
-    uint64_t rbp;
-    uint64_t code;
-    uint64_t rip;
-    uint64_t cs;
-    uint64_t rflags;
-    uint64_t rsp;
-    uint64_t ds;
-} __attribute__((packed));
+namespace sys_calls {
+    inline uint64_t issueSyscall(uint64_t syscall_number, uint64_t arg1, uint64_t arg2, uint64_t arg3) {
+        uint64_t result;
+        Logger::instance().println("[SYSCALL] Issuing system call with nr %X, rdi %X, rsi %X, rdx %X",
+                                   syscall_number, arg1, arg2, arg3);
+
+        asm volatile (
+                "mov %1, %%rax\n"          // System call number in RAX
+                "mov %2, %%rdi\n"          // First argument in RDI
+                "mov %3, %%rsi\n"          // Second argument in RSI
+                "mov %4, %%rdx\n"          // Third argument in RDX
+                "int $0x80\n"              // Trigger the interrupt
+                "mov %%rax, %0\n"          // Store the result from RAX
+                : "=r"(result)             // Output to variable result
+                : "r"(syscall_number), "r"(arg1), "r"(arg2), "r"(arg3) // Input
+                : "rax", "rdi", "rsi", "rdx" // Clobbered registers
+                );
+        return result;
+    }
+}
