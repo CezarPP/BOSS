@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "print.h"
-#include "../std/circular_buffer.h"
+#include "util/print.h"
+#include "std/circular_buffer.h"
 
 enum class PRINTER_COLORS : uint8_t {
     PRINT_COLOR_BLACK = 0,

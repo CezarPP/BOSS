@@ -3,7 +3,7 @@
 #include "arch/x86_64/interrupts.h"
 #include "drivers/keyboard.h"
 #include "drivers/timer.h"
-#include "util/console_printer.h"
+#include "console/console_printer.h"
 #include "multiboot/multiboot.h"
 #include "allocators/virtual_allocator.h"
 #include "allocators/kalloc_tests.h"

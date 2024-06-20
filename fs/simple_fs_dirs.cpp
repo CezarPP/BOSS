@@ -7,7 +7,7 @@
 
 #include "fs/simple_fs.h"
 #include "std/cstring.h"
-#include "util/console_printer.h"
+#include "console/console_printer.h"
 
 namespace simple_fs {
     Directory SimpleFS::add_dir_entry(Directory dir, uint32_t inum, uint32_t type, const char name[]) {

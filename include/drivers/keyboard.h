@@ -11,7 +11,7 @@
 #include "util/types.h"
 #include "arch/x86_64/io_ports.h"
 #include "arch/x86_64/logging.h"
-#include "util/console_printer.h"
+#include "console/console_printer.h"
 
 static constexpr uint16_t dataPortNr = 0x60;
 static constexpr uint16_t controlPortNr = 0x64;

@@ -7,7 +7,7 @@
 
 
 
-#include "../include/util/console_printer.h"
+#include "console/console_printer.h"
 #include "std/array.h"
 #include "arch/x86_64/logging.h"
 #include "arch/x86_64/exceptions.h"
@@ -117,8 +117,11 @@ void Console::executeCommand() {
     }
     buff[ptr] = '\0';
 
-    if (strlen(buff.data()) > 0)
+    if (strlen(buff.data()) > 0) {
         Logger::instance().println("Executing command %s", buff.data());
+
+
+    }
     // TODO execute command
 }
 

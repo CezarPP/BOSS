@@ -6,7 +6,7 @@
  */
 
 #include "fs/simple_fs.h"
-#include "util/console_printer.h"
+#include "console/console_printer.h"
 #include "std/expected.h"
 
 namespace simple_fs {

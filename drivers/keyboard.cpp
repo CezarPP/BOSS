@@ -6,7 +6,7 @@
  */
 
 #include "drivers/keyboard.h"
-#include "util/console_printer.h"
+#include "console/console_printer.h"
 
 
 void KeyboardDriver::activate() {
