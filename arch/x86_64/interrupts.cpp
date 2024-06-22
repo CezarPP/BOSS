@@ -4,18 +4,21 @@
 #include "arch/x86_64/exceptions.h"
 #include "arch/x86_64/logging.h"
 #include "arch/x86_64/system_calls.h"
+#include "std/algorithm.h"
 
 constexpr auto NUM_IDT_ENTRIES = 256;
 
 // 64-bit Descriptor in IDT
 struct InterruptDescriptor {
-    uint16_t base_low;        // offset bits 0..15
-    uint16_t selector;        // a code segment selector in GDT or LDT
-    uint8_t zero;             // bits 0..2 holds Interrupt Stack Table offset, rest of bits zero.
-    uint8_t type_attributes; // gate type, dpl, and p fields
-    uint16_t base_middle;        // offset bits 16..31
-    uint32_t base_high;        // offset bits 32..63
-    uint32_t zero2;            // reserved
+    uint16_t baseLow{};        // offset bits 0..15
+    uint16_t selector{};        // a code segment selector in GDT or LDT
+    uint8_t zero{};             // bits 0..2 holds Interrupt Stack Table offset, rest of bits zero.
+    uint8_t typeAttributes{}; // gate type, dpl, and p fields
+    uint16_t baseMiddle{};        // offset bits 16..31
+    uint32_t baseHigh{};        // offset bits 32..63
+    uint32_t zero2{};            // reserved
+
+    InterruptDescriptor() = default;
 }__attribute__((packed));
 static_assert(AssertSize<InterruptDescriptor, 16>());
 
@@ -29,8 +32,8 @@ struct IDTPointer {
 } __attribute__((packed));
 static_assert(AssertSize<IDTPointer, 10>());
 
-static InterruptHandler interruptHandlers[NUM_IDT_ENTRIES];
-InterruptDescriptor idt[NUM_IDT_ENTRIES];
+static std::array<InterruptHandler, NUM_IDT_ENTRIES> interruptHandlers;
+std::array<InterruptDescriptor, NUM_IDT_ENTRIES> idt;
 IDTPointer IDT_ptr;
 
 extern "C"
@@ -152,12 +155,12 @@ static void remapIRQTable() {
 }
 
 void idtSetGate(Byte num, Address base, uint16_t sel, Byte flags) {
-    idt[num].base_low = (base & 0xFFFF);
-    idt[num].base_middle = (base >> 16) & 0xFFFF;
-    idt[num].base_high = (base >> 32);
+    idt[num].baseLow = (base & 0xFFFF);
+    idt[num].baseMiddle = (base >> 16) & 0xFFFF;
+    idt[num].baseHigh = (base >> 32);
     idt[num].selector = sel;
     idt[num].zero = 0x0;
-    idt[num].type_attributes = flags;
+    idt[num].typeAttributes = flags;
     idt[num].zero2 = 0x0;
 }
 
@@ -169,16 +172,20 @@ void syscallHandler(SystemCallRegisters *registersState) {
 }
 }
 
+void setSyscallInterruptGate() {
+    idtSetGate(0x80, (Address) isr128, SYSTEM_CS, IDT_FLAG);
+}
+
 void setupInterrupts() {
     // Sets the IDT pointer
     IDT_ptr = {.limit = sizeof(InterruptDescriptor) * NUM_IDT_ENTRIES - 1,
             .base = reinterpret_cast<Address>(&idt)};
 
     // Initialize IDT with zeros
-    memset(&idt, 0, sizeof(InterruptDescriptor) * NUM_IDT_ENTRIES);
+    std::fill(idt.begin(), idt.end(), InterruptDescriptor{});
 
     // Nullify all the interrupt handlers.
-    memset(&interruptHandlers, 0, sizeof(InterruptHandler) * 256);
+    std::fill(interruptHandlers.begin(), interruptHandlers.end(), InterruptHandler{});
 
     remapIRQTable();
 
@@ -235,7 +242,7 @@ void setupInterrupts() {
         idtSetGate(i, (Address) defaultIRQ, SYSTEM_CS, IDT_FLAG);
     }
 
-    idtSetGate(0x80, (Address) isr128, SYSTEM_CS, IDT_FLAG);  // 0xEE present, ring 3
+    setSyscallInterruptGate();
     idtLoad();
 
     Logger::instance().println("[KERNEL] Setting up system calls...");
