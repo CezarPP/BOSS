@@ -42,7 +42,7 @@ namespace paging {
 
     bool pagePresent(VirtualAddress virt);
 
-    pml4t_t find_pml4t();
+    pml4t_t findPml4T();
 
     void map(VirtualAddress virt, size_t physical, uint8_t flags = PRESENT | WRITE);
 

@@ -55,9 +55,9 @@ union VirtualAddress {
 
     Address address;
 
-    VirtualAddress() {}
+    constexpr VirtualAddress() : address(0) {}
 
-    VirtualAddress(Address address) {
+    constexpr VirtualAddress(Address address) {
         this->address = address;
     }
 

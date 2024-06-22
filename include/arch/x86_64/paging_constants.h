@@ -24,24 +24,21 @@ namespace paging {
     // Don't need this constant anymore
     // constexpr const size_t PHYSICAL_ALLOCATOR_VIRTUAL_SIZE = MAX_PHYSICAL_SIZE / 100;
 
-    /*constexpr const size_t KERNEL_VIRTUAL_START = PHYSICAL_ALLOCATOR_VIRTUAL_START + PHYSICAL_ALLOCATOR_VIRTUAL_SIZE;
     // The start and end virtual addresses available to the Virtual Allocator
     // Only for kernel space, user space should be able to address more since it will have more page tables
-    constexpr const size_t VIRTUAL_ALLOCATOR_START = KERNEL_VIRTUAL_START + PHYSICAL_ALLOCATOR_VIRTUAL_SIZE;
-    constexpr const size_t VIRTUAL_ALLOCATOR_END = KERNEL_VIRTUAL_START + KERNEL_VIRTUAL_SIZE;*/
 
     // On each page there are
-    constexpr const size_t pml4e_allocations = 512_GiB; /// The physical memory that a PML4T Entry can map
-    constexpr const size_t pdpte_allocations = 1_GiB;   /// The physical memory that a PDPT Entry can map
-    constexpr const size_t pde_allocations = 2_MiB;   /// The physical memory that a PD Entry can map
-    constexpr const size_t pte_allocations = 4_KiB;   /// The physical memory that a PD Entry can map
+    constexpr const size_t pml4e_allocations = 512_GiB; ///> The physical memory that a PML4T Entry can map
+    constexpr const size_t pdpte_allocations = 1_GiB;   ///> The physical memory that a PDPT Entry can map
+    constexpr const size_t pde_allocations = 2_MiB;   ///> The physical memory that a PD Entry can map
+    constexpr const size_t pte_allocations = 4_KiB;   ///> The physical memory that a PD Entry can map
 
-    constexpr const uint8_t PRESENT = 0x1;  /// Paging flag for present page
-    constexpr const uint8_t WRITE = 0x2;  /// Paging flag for writable page
-    constexpr const uint8_t USER = 0x4;  /// Paging flag for user page
-    constexpr const uint8_t WRITE_THROUGH = 0x8;  /// Paging flag for write-through page
-    constexpr const uint8_t CACHE_DISABLED = 0x10; /// Paging flag for cache disabled page
-    constexpr const uint8_t ACCESSED = 0x20; /// Paging flag for accessed page
+    constexpr const uint8_t PRESENT = 0x1;  ///> Paging flag for present page
+    constexpr const uint8_t WRITE = 0x2;  ///> Paging flag for writable page
+    constexpr const uint8_t USER = 0x4;  ///> Paging flag for user page
+    constexpr const uint8_t WRITE_THROUGH = 0x8;  ///> Paging flag for write-through page
+    constexpr const uint8_t CACHE_DISABLED = 0x10; ///> Paging flag for cache disabled page
+    constexpr const uint8_t ACCESSED = 0x20; ///> Paging flag for accessed page
 }
 
 #endif //BOSS_PAGING_CONSTANTS_H
