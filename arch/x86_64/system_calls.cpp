@@ -109,7 +109,7 @@ namespace sys_calls {
         Console::instance().println("Listing current directory...");
         for (const auto &it: contents)
             if (it.isFile)
-                Console::instance().println("File %s, inum: %d, size: %d", it.fileName.c_str(), it.inum, it.size);
+                Console::instance().println("File %s, inum: %X", it.fileName.c_str(), it.inum);
             else
                 Console::instance().println("Dir %s", it.fileName.c_str());
 
