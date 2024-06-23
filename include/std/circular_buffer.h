@@ -70,6 +70,13 @@ public:
     }
 
     /**
+     * Removes all elements from the buffer
+     */
+    void clear() {
+        start = end = 0;
+    }
+
+    /**
      * Removes the last element that was pushed
      */
     void pop_last() {
