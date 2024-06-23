@@ -31,6 +31,8 @@ void Console::print_clear() {
     for (size_t i = 0; i < NUM_ROWS; i++) {
         clear_row(i);
     }
+    row_ = 0;
+    charBuffer.clear();
 }
 
 void Console::printNewline() {
@@ -105,6 +107,7 @@ void Console::addKeyboardInput(char c) {
     if (c == '\n') {
         executeCommand();
         setPrompt();
+        charBuffer.clear();
     } else if (c == '\b')
         charBuffer.pop_last();
     else
