@@ -10,6 +10,7 @@
 
 #include "util/types.h"
 #include "std/array.h"
+#include "arch/x86_64/logging.h"
 
 namespace sys_calls {
     inline uint64_t issueSyscall(uint64_t syscall_number, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4) {
@@ -50,6 +51,8 @@ namespace sys_calls {
 
     void sc_rmdir(SystemCallRegisters *regs);
 
+    void sc_ls(SystemCallRegisters *regs);
+
     typedef void (*SyscallHandlerType)(SystemCallRegisters *);
 
     static std::array<SyscallHandlerType, 256> sysCallArray{};
@@ -66,6 +69,9 @@ namespace sys_calls {
         sysCallArray[0x4F] = sc_rmdir;
 
         sysCallArray[0xAA] = sc_rm;
+
+        // usually ls calls other system calls
+        sysCallArray[0xAB] = sc_ls; // custom, simplifies stuff
     }
 
     inline void doSystemCall(SystemCallRegisters *regState) {

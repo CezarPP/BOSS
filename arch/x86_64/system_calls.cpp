@@ -7,6 +7,7 @@
 
 #include "fs/vfs.h"
 #include "arch/x86_64/system_calls.h"
+#include "console/console_printer.h"
 
 namespace sys_calls {
     int64_t expected_to_i64(const std::expected<void> &status) {
@@ -97,6 +98,21 @@ namespace sys_calls {
         auto dir = reinterpret_cast<char *>(regs->rdi);
 
         auto status = vfs::rmDir(dir);
+        regs->rax = expected_to_i64(status);
+    }
+
+    void sc_ls(SystemCallRegisters *regs) {
+        Logger::instance().println("[SYSCALL] In ls syscall...");
+        std::vector<vfs::file> contents;
+        auto status = vfs::ls(contents);
+
+        Console::instance().println("Listing current directory...");
+        for (const auto &it: contents)
+            if (it.isFile)
+                Console::instance().println("File %s, inum: %d, size: %d", it.fileName.c_str(), it.inum, it.size);
+            else
+                Console::instance().println("Dir %s", it.fileName.c_str());
+
         regs->rax = expected_to_i64(status);
     }
 }
