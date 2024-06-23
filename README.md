@@ -8,7 +8,7 @@ It's main focus is not raw performance, but rather understandability of the code
 
 ## Compiling & running the kernel
 
-You can use one of the CMake targets which in term use _qemu_ to run the OS.
+You can use one of the CMake targets which in turn use _qemu_ to run the OS.
 I choose CMake because I wanted a smooth developer experience with Clion.
 
 ## Features
@@ -19,7 +19,8 @@ I choose CMake because I wanted a smooth developer experience with Clion.
 * [x] Keyboard driver
 * [x] Paging & Physical & Virtual allocators
 * [x] malloc() and custom ::operator new
-* [ ] C++ STD library replica (in progress)
+* [x] C++ STD library replica
 * [x] ATA Hard disk driver
 * [x] SimpleFS file system
-* [ ] Virtual File System (VFS) (in progress)
+* [x] Virtual File System (VFS)
+* [x] System calls to use the file system
