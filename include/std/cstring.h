@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include "arch/x86_64/exceptions.h"
 
 typedef uint64_t size_t;
 
@@ -137,4 +138,124 @@ inline char *strtok(char *str, const char *delim) {
         *buffer++ = '\0';
 
     return tokenBegin;
+}
+
+inline bool isspace(char c) {
+    return c == ' ';
+}
+
+inline bool isdigit(char c) {
+    return c >= '0' && c <= '9';
+}
+
+inline bool isalpha(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+inline char tolower(char c) {
+    if (c >= 'A' && c <= 'Z')
+        return c + ('a' - 'A');
+    return c;
+}
+
+inline long strtol(const char *str, char **endptr, int base) {
+    long result = 0;
+    bool isNegative = false;
+
+    // Leading whitespaces are ignored
+    while (isspace(*str)) str++;
+
+    // Check the sign
+    if (*str == '-') {
+        isNegative = true;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+
+    // Auto-detect base
+    if (base == 0) {
+        if (*str == '0' && (*(str + 1) == 'x' || *(str + 1) == 'X')) {
+            base = 16;
+            str += 2;
+        } else if (*str == '0') {
+            base = 8;
+            str++;
+        } else {
+            base = 10;
+        }
+    }
+
+    // Parse number according to base
+    while (*str) {
+        int digit;
+        if (isdigit(*str))
+            digit = *str - '0';
+        else if (isalpha(*str))
+            digit = tolower(*str) - 'a' + 10;
+        else
+            break;
+
+        if (digit >= base)
+            break;
+
+        long newResult = result * base + digit;
+        kAssert(newResult >= result, "Overflow in strtol");
+
+        result = newResult;
+        str++;
+    }
+
+    // Set end pointer
+    if (endptr) *endptr = (char *) str;
+
+    return isNegative ? -result : result;
+}
+
+inline unsigned long strtoul(const char *str, char **endptr, int base) {
+    unsigned long result = 0;
+
+    // Leading whitespaces are ignored
+    while (isspace(*str)) str++;
+
+    // Ignore the sign for strtoul
+    if (*str == '+' || *str == '-') str++;
+
+    // Auto-detect base
+    if (base == 0) {
+        if (*str == '0' && (*(str + 1) == 'x' || *(str + 1) == 'X')) {
+            base = 16;
+            str += 2;
+        } else if (*str == '0') {
+            base = 8;
+            str++;
+        } else {
+            base = 10;
+        }
+    }
+
+    // Parse number according to base
+    while (*str) {
+        int digit;
+        if (isdigit(*str))
+            digit = *str - '0';
+        else if (isalpha(*str))
+            digit = tolower(*str) - 'a' + 10;
+        else
+            break;
+
+        if (digit >= base) break;
+
+        unsigned long newResult = result * base + digit;
+        kAssert(newResult >= result, "Overflow in strtoul");
+
+        result = newResult;
+        str++;
+    }
+
+    // Set end pointer
+    if (endptr)
+        *endptr = (char *) str;
+
+    return result;
 }
