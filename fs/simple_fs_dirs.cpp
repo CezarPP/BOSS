@@ -45,6 +45,7 @@ namespace simple_fs {
             return temp;
         }
 
+        Logger::instance().println("[SIMPLE_FS] read_dir_from_offset passed sanity check");
         /// Get offsets and indexes
         uint32_t inum = curr_dir.Table[offset].inum;
         uint32_t block_idx = (inum / DIR_PER_BLOCK);
@@ -52,6 +53,9 @@ namespace simple_fs {
 
         /// Read block
         Block block{};
+        uint32_t blockToRead = MetaData.Blocks - 1 - block_idx;
+        Logger::instance().println("[SIMPLE_FS] read_dir_from_offset, offset: %d, inum: %d, toRead: %d",
+                                   offset, inum, blockToRead);
         disk_->read(MetaData.Blocks - 1 - block_idx, block.data);
         return block.Directories[block_offset];
     }
@@ -82,6 +86,7 @@ namespace simple_fs {
     bool SimpleFS::ls_dir(const char name[], std::vector<vfs::file> &contents) {
         checkFsMounted();
 
+        Logger::instance().println("[SIMPLE_FS] In ls_dir...");
         /// Get the directory entry offset
         int offset = dir_lookup(curr_dir, name);
         if (offset == -1) {

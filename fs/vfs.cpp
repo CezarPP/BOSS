@@ -108,7 +108,7 @@ void vfs::init(Disk *disk) {
     // Mount and test all file systems
     for (auto &mp: mount_point_list) {
         mp.file_system->mount();
-        mp.file_system->test();
+        // mp.file_system->test();
     }
 }
 

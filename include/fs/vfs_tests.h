@@ -13,7 +13,7 @@ namespace vfs {
     constexpr const auto BLOCK_SIZE = simple_fs::BLOCK_SIZE;
 
     void test_create_file() {
-        const char *fileName = "new_file";
+        const char *fileName = "new_file4";
         auto fd = vfs::open(fileName, OPEN_CREATE);
         kAssert(fd, "[VFS] Failed to open new file!");
 
@@ -24,7 +24,7 @@ namespace vfs {
     }
 
     void test_write_to_file() {
-        const char *fileName = "test_file";
+        const char *fileName = "test_file1";
         auto fd = vfs::open(fileName, OPEN_CREATE);
         kAssert(fd, "[VFS] Failed to open file for writing!");
 
@@ -42,7 +42,7 @@ namespace vfs {
     }
 
     void test_create_directory() {
-        const char *dirName = "new_directory";
+        const char *dirName = "new_directory1";
         auto result = vfs::mkdir(dirName);
         kAssert(result, "[VFS] Failed to create directory");
 
@@ -52,7 +52,7 @@ namespace vfs {
     }
 
     void test_remove_directory() {
-        const char *dirName = "to_remove_dir";
+        const char *dirName = "to_remove_dir2";
         auto made = vfs::mkdir(dirName);
 
         kAssert(made, "[VFS] Failed to make dir!");
@@ -62,7 +62,7 @@ namespace vfs {
     }
 
     void test_change_directory() {
-        const char *dirName = "test_dir";
+        const char *dirName = "test_dir2";
         auto madeDir = vfs::mkdir(dirName);
         kAssert(madeDir, "[VFS] Failed to make dir");
 
@@ -74,15 +74,15 @@ namespace vfs {
     }
 
     void test_list_directory() {
-        auto created = vfs::mkdir("test_dir");
+        auto created = vfs::mkdir("test_dir3");
 
         kAssert(created, "[VFS] Failed to create directory");
 
-        auto changedDir = vfs::cd("test_dir");
+        auto changedDir = vfs::cd("test_dir3");
 
         kAssert(changedDir, "[VFS] Failed to change directory");
 
-        auto opened = vfs::open("known_file", OPEN_CREATE);
+        auto opened = vfs::open("known_file3", OPEN_CREATE);
 
         kAssert(opened, "[VFS] Failed to create file with open");
 
@@ -91,7 +91,7 @@ namespace vfs {
         kAssert(listed, "[VFS] Failed to list directory contents");
 
         bool found = std::any_of(contents.begin(), contents.end(), [](const vfs::file &file) {
-            return file.fileName == "known_file" && file.isFile;
+            return file.fileName == "known_file3" && file.isFile;
         });
         kAssert(found, "[VFS] Known file not found during ls");
     }
