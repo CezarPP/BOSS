@@ -9,11 +9,12 @@
 #include "allocators/kalloc_tests.h"
 #include "allocators/kalloc.h"
 #include "fs/vfs_tests.h"
+#include "arch/x86_64/system_calls.h"
 
 extern "C" void kernel_main(uint64_t multibootAndMagic) {
     // [CONSOLE] Initialize console
     Console::instance().print_clear();
-    Console::instance().println("[KERNEL MAIN] Welcome to BOSS!\n");
+    Console::instance().println("Welcome to BOSS!\n");
 
 
     // [LOGGER]
@@ -67,6 +68,7 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
      * Ata ata1s{ata::ATA_SECONDARY, false}; */
 
     // [SimpleFS]
+    Console::instance().println("Enabling the file system...");
     simple_fs::SimpleFS simpleFs{&ata0m};
     simpleFs.format();
     simpleFs.debug();
@@ -75,6 +77,16 @@ extern "C" void kernel_main(uint64_t multibootAndMagic) {
     vfs::init(&ata0m);
     vfs::test();
 
+    // [SYSCALL]
+    Logger::instance().println("[MAIN] Issuing test system call...");
+    char cwd[100];
+    auto result = sys_calls::issueSyscall(0x4A, reinterpret_cast<uint64_t>(&cwd), 0xCC, 0xDD, 0xEE);
+    Logger::instance().println("[MAIN] Result is %X", result);
+    Logger::instance().println("[MAIN] CWD is %s", cwd);
+
+    Console::instance().println("The filesystem has been successfully enabled");
+    Console::instance().setPrompt();
+    // ata0m.enableDetailedLogging();
 
     while (true) {
         haltCpu();
