@@ -88,6 +88,8 @@ namespace ata {
 
         static volatile bool primary_invoked;
 
+        bool detailedLoggingEnabled{false};
+
         static void primary_controller_handler() {
             Ata::primary_invoked = true;
         }
@@ -103,9 +105,14 @@ namespace ata {
                                                 devicePort(portBase + ATA_DRV_HEAD),
                                                 commandPort(portBase + ATA_COMMAND),
                                                 controlPort(portBase + ATA_DEV_CTL) {
-            kAssert(isMaster, "[ATA] Only is supported at the moment!");
+            kAssert(isMaster, "[ATA] Only master is supported at the moment!");
             this->isMaster = isMaster;
-            setInterruptHandler(0x2e, primary_controller_handler);
+            setInterruptHandler(0x2E, primary_controller_handler);
+            setInterruptHandler(0xE, primary_controller_handler);
+        }
+
+        void enableDetailedLogging() {
+            this->detailedLoggingEnabled = true;
         }
 
         bool select_device() {
@@ -124,11 +131,14 @@ namespace ata {
         }
 
         static void ata_wait_irq_primary() {
-            while (!primary_invoked) {
+            volatile int x = 0;
+            for (int i = 0;!primary_invoked && i < 10000; i++) {
+                x += 1;
                 asm volatile ("nop");
                 asm volatile ("nop");
                 asm volatile ("nop");
                 asm volatile ("nop");
+                x += 1;
                 asm volatile ("nop");
             }
 
@@ -190,12 +200,16 @@ namespace ata {
             commandPort.write(command);
 
             /**- Wait at most 30 seconds for BSY flag to be cleared */
+            if (detailedLoggingEnabled)
+                Logger::instance().println("[ATA] Waiting for controller...");
             kAssert(wait_for_controller(ATA_STATUS_BSY, 0, CONTROLLER_TIMEOUT), "[ATA] Error wait");
-
+            if (detailedLoggingEnabled)
+                Logger::instance().println("[ATA] Finished waiting!");
             // Verify if there are errors
             kAssert(!(commandPort.read() & ATA_STATUS_ERR), "[ATA] Error status");
 
             auto *buffer = reinterpret_cast<uint16_t *>(data);
+
 
             if (operation == sector_operation::WRITE) {
                 for (int i = 0; i < 256; ++i)
@@ -206,7 +220,11 @@ namespace ata {
             }
 
             // Wait the IRQ to happen
+            if (detailedLoggingEnabled)
+                Logger::instance().println("[ATA] Waiting for IRQ primary...");
             ata_wait_irq_primary();
+            if (detailedLoggingEnabled)
+                Logger::instance().println("[ATA] Finished waiting!");
 
             // The device can report an error after the IRQ
             kAssert(!(commandPort.read() & ATA_STATUS_ERR), "[ATA] Error after IRQ");
@@ -264,8 +282,10 @@ namespace ata {
                 b = dataPort.read();
             }
 
+            controlPort.write(0);
+
             // Get the size of the disk
-            this->cntBlocks_ = *reinterpret_cast<uint32_t *>(reinterpret_cast<size_t>(&info[0]) + 114);
+            this->cntBlocks_ = *reinterpret_cast<uint32_t *>(reinterpret_cast<size_t>(&info[0]) + 114) / 2;
             this->totalSize_ = this->cntBlocks_ * SECTOR_SIZE;
 
             Logger::instance().println("[ATA] We have a disk with %X sectors of size %X:\n",
