@@ -49,6 +49,8 @@ class Console : public PrinterInterface<Console> {
 
     circular_buffer<char, 128> charBuffer{};
 
+    char crtDir[128]{};
+
     // Private constructor
     Console() = default;
 
@@ -80,4 +82,8 @@ public:
     void printStr(const char *str);
 
     void printSetColor(PRINTER_COLORS foreground, PRINTER_COLORS background);
+
+    void setCrtDir();
+
+    void setPrompt();
 };

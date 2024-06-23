@@ -12,6 +12,8 @@
 #include "arch/x86_64/logging.h"
 #include "arch/x86_64/exceptions.h"
 #include "std/cstring.h"
+#include "console/commands.h"
+#include "fs/vfs.h"
 
 
 void Console::clear_row(size_t row) {
@@ -99,13 +101,14 @@ void Console::printSetColor(PRINTER_COLORS foreground, PRINTER_COLORS background
 }
 
 void Console::addKeyboardInput(char c) {
-    if (c == '\n')
+    Console::instance().printf("%c", c);
+    if (c == '\n') {
         executeCommand();
-    else if (c == '\b')
+        setPrompt();
+    } else if (c == '\b')
         charBuffer.pop_last();
     else
         charBuffer.push(c);
-    Console::instance().printf("%c", c);
 }
 
 void Console::executeCommand() {
@@ -120,9 +123,17 @@ void Console::executeCommand() {
     if (strlen(buff.data()) > 0) {
         Logger::instance().println("Executing command %s", buff.data());
 
-
+        commands::doCommand(buff.data());
     }
-    // TODO execute command
+}
+
+void Console::setCrtDir() {
+    strcpy(this->crtDir, vfs::pwd().c_str());
+}
+
+void Console::setPrompt() {
+    setCrtDir();
+    Console::instance().printf("boss@boss %s > ", this->crtDir);
 }
 
 /*void Printer::print_hex(uint64_t num) {
