@@ -16,7 +16,7 @@ void commands::doCommand(char *commandText) {
 
     uint64_t result;
     if (strcmp(command, "pwd") == 0) {
-        char buffer[256];  // Assuming 256 is a sufficient size
+        char buffer[256];
         result = sys_calls::issueSyscall(0x4A, reinterpret_cast<uint64_t>(buffer), 0, 0, 0);
         Console::instance().println("Current directory: %s", buffer);
     } else if (strcmp(command, "touch") == 0) {
@@ -24,8 +24,7 @@ void commands::doCommand(char *commandText) {
         result = sys_calls::issueSyscall(0x02, reinterpret_cast<uint64_t>(filename), 0x1, 0, 0);
     } else if (strcmp(command, "open") == 0) {
         const char *filename = args;
-        uint64_t flags = strtol(strtok(nullptr, " "), nullptr, 10);  // Assuming flags are passed as next arg
-        result = sys_calls::issueSyscall(0x02, reinterpret_cast<uint64_t>(filename), flags, 0, 0);
+        result = sys_calls::issueSyscall(0x02, reinterpret_cast<uint64_t>(filename), 0x0, 0, 0);
         Console::instance().println("File descriptor: %X", result);
     } else if (strcmp(command, "close") == 0) {
         uint64_t fd = strtoul(args, nullptr, 10);
@@ -33,12 +32,12 @@ void commands::doCommand(char *commandText) {
         Console::instance().println("Successfully closed file descriptor");
     } else if (strcmp(command, "read") == 0) {
         uint64_t fd = strtoul(args, nullptr, 10);
-        uint8_t buffer[1024];  // buffer size assumption
-        uint64_t size = strtoul(strtok(nullptr, " "), nullptr, 10);
-        uint64_t offset = strtoul(strtok(nullptr, " "), nullptr, 10);
+        uint8_t buffer[1024];
+        // uint64_t size = strtoul(strtok(nullptr, " "), nullptr, 10);
+        // uint64_t offset = strtoul(strtok(nullptr, " "), nullptr, 10);
 
-        Logger::instance().println("[COMMANDS] Reading fd %X, data %s, size %X, offset %X", fd, size, offset);
-        result = sys_calls::issueSyscall(0x00, fd, reinterpret_cast<uint64_t>(buffer), size, offset);
+        Logger::instance().println("[COMMANDS] Reading fd %X, data %s", fd);
+        result = sys_calls::issueSyscall(0x00, fd, reinterpret_cast<uint64_t>(buffer), 0, 0);
         Console::instance().println("Read data: %s", buffer);
     } else if (strcmp(command, "write") == 0) {
         uint64_t fd = strtoul(args, nullptr, 10);
