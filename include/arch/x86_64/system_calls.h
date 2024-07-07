@@ -13,8 +13,8 @@
 #include "arch/x86_64/logging.h"
 
 namespace sys_calls {
-    inline uint64_t issueSyscall(uint64_t syscall_number, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4) {
-        uint64_t result;
+    inline int64_t issueSyscall(uint64_t syscall_number, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4) {
+        int64_t result;
         Logger::instance().println("[SYSCALL] Issuing system call with nr %X, rdi %X, rsi %X, rdx %X",
                                    syscall_number, arg1, arg2, arg3);
 
